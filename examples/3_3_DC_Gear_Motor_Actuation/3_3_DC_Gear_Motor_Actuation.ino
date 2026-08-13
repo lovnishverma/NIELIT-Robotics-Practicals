@@ -16,25 +16,25 @@
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
   - L293D / L298N Dual H-Bridge Motor Driver
-  - 2x DC Yellow BO Gear Motors (3V - 6V, 1:48 gear ratio)
-  - 2WD Robotic Platform
-  - External Motor Power Supply (6V - 12V Battery Pack)
+  - 2x DC Yellow BO Gear Motors (Nominal: 3V - 6V, 1:48 gear ratio)
+  - 2WD Robotic Platform with caster wheel
+  - External Motor Power Supply: 6.0V - 7.4V (e.g. 4x AA Battery Pack)
 
   Pin Configuration:
   -------------------------------------------------------------
   Driver / Component Pin   Arduino UNO Pin   Function
   -------------------------------------------------------------
-  ENA                      Pin 5 (PWM)       Left Motor Speed Enable
+  ENA                      Pin 5 (PWM)       Left Motor Speed Enable (Timer0)
   IN1                      Pin 2             Left Motor Direction Input 1
   IN2                      Pin 3             Left Motor Direction Input 2
   IN3                      Pin 4             Right Motor Direction Input 1
   IN4                      Pin 7             Right Motor Direction Input 2
-  ENB                      Pin 6 (PWM)       Right Motor Speed Enable
+  ENB                      Pin 6 (PWM)       Right Motor Speed Enable (Timer0)
   OUT1, OUT2               Terminals         Left DC Gear Motor
   OUT3, OUT4               Terminals         Right DC Gear Motor
-  VCC1                     5V                Arduino 5V (Logic Supply)
-  VCC2 / VM                Battery (+)       Motor Power (+6V to +12V)
-  GND                      GND & Batt (-)    Common Ground Busbar
+  VCC1 / VSS               5V                Arduino 5V (Logic Supply)
+  VCC2 / VM                Battery (+)       Motor Power (6.0V - 7.4V Recommended)
+  GND                      GND & Batt (-)    Common Ground Busbar (Mandatory)
   -------------------------------------------------------------
 
   Working Principle:
@@ -44,17 +44,18 @@
   microcontroller to spin each motor in either direction or vary its speed via PWM.
 
   Expected Behavior:
-  1. Maneuver 1: Both motors drive Forward at full thrust (2.5s).
-  2. Maneuver 2: Both motors drive Reverse at full pull (2.5s).
+  1. Maneuver 1: Both motors drive Forward at full thrust (2.5s blocking delay).
+  2. Maneuver 2: Both motors drive Reverse at full pull (2.5s blocking delay).
   3. Maneuver 3: Left motor only drives Forward (2.0s), pivoting the chassis to the right.
   4. Maneuver 4: Right motor only drives Forward (2.0s), pivoting the chassis to the left.
   5. Maneuver 5: Left motor reverses while Right motor drives forward (Axial Spin Left, 2.0s).
   6. Maneuver 6: Left motor drives forward while Right motor reverses (Axial Spin Right, 2.0s).
   7. Clear telemetry messages are displayed on the Serial Monitor at 9600 baud.
 
-  Notes:
-  - A brief 800ms soft pause is introduced between maneuvers to prevent inductive current surges
-    and mechanical stress on the plastic gear teeth.
+  Notes & Safety:
+  - An 800ms soft pause (`stopMotors()`) is introduced between maneuvers to prevent inductive current
+    surges and protect plastic gearbox spur gears from high mechanical shock loads.
+  - Requires physical hardware verification of motor wire polarity prior to chassis mounting.
 
   Author/Organization:
   National Institute of Electronics & Information Technology
@@ -68,12 +69,12 @@
 // =====================================================
 
 // Left Motor Driver Pins
-#define ENA 5
+#define ENA 5   // Timer0 PWM
 #define IN1 2
 #define IN2 3
 
 // Right Motor Driver Pins
-#define ENB 6
+#define ENB 6   // Timer0 PWM
 #define IN3 4
 #define IN4 7
 

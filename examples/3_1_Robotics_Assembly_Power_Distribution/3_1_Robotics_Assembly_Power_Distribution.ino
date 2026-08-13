@@ -12,14 +12,14 @@
   Demonstrates robotic chassis power distribution by isolating the microcontroller 5V
   logic rail from the high-current DC motor battery supply while maintaining a shared
   common ground reference. Executes a structured pre-flight diagnostic routine to verify
-  forward and reverse rotation on both channels.
+  logical forward and reverse rotation on both channels.
 
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
-  - L293D Dual H-Bridge Motor Driver IC / Shield (or L298N Module)
-  - 2x DC Yellow BO Gear Motors (3V - 6V, 1:48 gear ratio)
+  - L293D Dual H-Bridge Motor Driver IC / Shield (or L298N Module with flyback diodes)
+  - 2x DC Yellow BO Gear Motors (Nominal: 3V - 6V, 1:48 gear ratio)
   - 2WD Robotic Chassis with caster wheel
-  - External Motor Power Supply (6V - 12V Battery Pack)
+  - External Motor Power Supply: 6.0V - 7.4V (e.g. 4x AA 1.5V batteries or 2S Li-Ion with buck regulator)
   - Onboard Status LED (Pin 13)
 
   Pin Configuration:
@@ -32,30 +32,34 @@
   IN3 (3A)                 Pin 4             Right Motor Direction A
   IN4 (4A)                 Pin 7             Right Motor Direction B
   ENB (3,4EN)              Pin 6 (PWM)       Right Motor Speed Enable
-  VCC1 (Logic)             5V                Arduino 5V Regulated Supply
-  VCC2 / VM (Motor)        Battery (+)       External Battery (+6V to +12V)
-  GND (All GND pins)       GND & Batt (-)    Common Ground Busbar
+  VCC1 / VSS (Logic)       5V                Arduino 5V Regulated Supply
+  VCC2 / VM (Motor)        Battery (+)       Motor Supply Rail (6.0V - 7.4V Recommended)
+  GND (All GND pins)       GND & Batt (-)    Common Ground Busbar (Mandatory)
   STATUS_LED               Pin 13            Visual Diagnostic Indicator
   -------------------------------------------------------------
 
-  Working Principle:
-  DC motors generate inductive current spikes and substantial stall current (up to 1A+).
-  Drawing motor power from the Arduino 5V pin causes severe voltage sag and brownout resets.
-  By powering motors directly from a dedicated battery pack and tying all ground rails together,
-  clean logic levels are maintained across the H-bridge inputs.
+  Electrical & Power Constraints:
+  - DC BO gear motors are rated for 3V to 6V DC.
+  - The L293D driver IC introduces an internal bipolar saturation voltage drop (V_CE,sat ~1.4V to 1.8V).
+    A 6.0V to 7.4V battery pack delivers approximately 4.5V to 5.6V directly across the motor terminals.
+  - Drawing motor current from the Arduino 5V header will cause voltage collapse and microcontroller resets.
+  - A common ground between the Arduino GND and the external battery negative terminal is mandatory
+    to establish a shared reference voltage for TTL logic signals (IN1-IN4, ENA, ENB).
 
   Expected Behavior:
-  1. Startup: Status LED blinks during a 3-second power stabilization countdown.
-  2. Phase 1: Left wheel rotates Forward for 1.5s, pauses, then rotates Reverse for 1.5s.
-  3. Phase 2: Right wheel rotates Forward for 1.5s, pauses, then rotates Reverse for 1.5s.
-  4. Phase 3: Both wheels drive Forward synchronously for 2.0s.
-  5. Phase 4: Both wheels drive Reverse synchronously for 2.0s.
-  6. Telemetry is logged to Serial Monitor at 9600 baud.
+  1. Startup: Status LED blinks during a 3-second power stabilization countdown (blocking delay used for sequence).
+  2. Phase 1: Left wheel drives in Logical Forward for 1.5s, pauses, then drives in Logical Reverse for 1.5s.
+  3. Phase 2: Right wheel drives in Logical Forward for 1.5s, pauses, then drives in Logical Reverse for 1.5s.
+  4. Phase 3: Both wheels drive in Logical Forward synchronously for 2.0s.
+  5. Phase 4: Both wheels drive in Logical Reverse synchronously for 2.0s.
+  6. Diagnostic status messages are streamed to the Serial Monitor at 9600 baud.
 
-  Notes:
-  - If a wheel rotates in reverse during a forward test phase, swap the two wire leads
-    connected to that motor's driver terminals (OUT1/OUT2 or OUT3/OUT4).
-  - Common ground connection between Arduino GND and Battery (-) is strictly mandatory.
+  Hardware Notes:
+  - Because left and right motors are mounted in mirror symmetry on opposite sides of the chassis,
+    their output shafts rotate in physically opposite rotational directions (one clockwise, one counter-clockwise)
+    to drive the vehicle chassis in the same linear direction.
+  - If a wheel rotates backwards during its forward diagnostic phase, swap the two physical terminal
+    leads of that motor at the driver output terminals (OUT1/OUT2 or OUT3/OUT4).
 
   Author/Organization:
   National Institute of Electronics & Information Technology
@@ -69,12 +73,12 @@
 // =====================================================
 
 // Left Motor Driver Pins
-#define ENA 5   // PWM Speed Enable
+#define ENA 5   // PWM Speed Enable (Timer0, ~976 Hz)
 #define IN1 2   // Direction Pin A
 #define IN2 3   // Direction Pin B
 
 // Right Motor Driver Pins
-#define ENB 6   // PWM Speed Enable
+#define ENB 6   // PWM Speed Enable (Timer0, ~976 Hz)
 #define IN3 4   // Direction Pin A
 #define IN4 7   // Direction Pin B
 
@@ -147,7 +151,7 @@ void loop() {
   // ---------------------------------------------------
   // Phase 1: Left Motor Channel Polarity Check
   // ---------------------------------------------------
-  Serial.println(F("[DIAGNOSTIC] Phase 1A: Left Motor FORWARD (Verify CW rotation)"));
+  Serial.println(F("[DIAGNOSTIC] Phase 1A: Left Motor -> LOGICAL FORWARD (Verify forward rotation)"));
   digitalWrite(STATUS_LED, HIGH);
   setLeftMotor(true, TEST_SPEED_SINGLE);
   delay(PULSE_DELAY_MS);
@@ -155,7 +159,7 @@ void loop() {
   digitalWrite(STATUS_LED, LOW);
   delay(PAUSE_DELAY_MS);
 
-  Serial.println(F("[DIAGNOSTIC] Phase 1B: Left Motor REVERSE (Verify CCW rotation)"));
+  Serial.println(F("[DIAGNOSTIC] Phase 1B: Left Motor -> LOGICAL REVERSE (Verify reverse rotation)"));
   digitalWrite(STATUS_LED, HIGH);
   setLeftMotor(false, TEST_SPEED_SINGLE);
   delay(PULSE_DELAY_MS);
@@ -166,7 +170,7 @@ void loop() {
   // ---------------------------------------------------
   // Phase 2: Right Motor Channel Polarity Check
   // ---------------------------------------------------
-  Serial.println(F("[DIAGNOSTIC] Phase 2A: Right Motor FORWARD (Verify CW rotation)"));
+  Serial.println(F("[DIAGNOSTIC] Phase 2A: Right Motor -> LOGICAL FORWARD (Verify forward rotation)"));
   digitalWrite(STATUS_LED, HIGH);
   setRightMotor(true, TEST_SPEED_SINGLE);
   delay(PULSE_DELAY_MS);
@@ -174,7 +178,7 @@ void loop() {
   digitalWrite(STATUS_LED, LOW);
   delay(PAUSE_DELAY_MS);
 
-  Serial.println(F("[DIAGNOSTIC] Phase 2B: Right Motor REVERSE (Verify CCW rotation)"));
+  Serial.println(F("[DIAGNOSTIC] Phase 2B: Right Motor -> LOGICAL REVERSE (Verify reverse rotation)"));
   digitalWrite(STATUS_LED, HIGH);
   setRightMotor(false, TEST_SPEED_SINGLE);
   delay(PULSE_DELAY_MS);
@@ -206,7 +210,7 @@ void loop() {
   digitalWrite(STATUS_LED, LOW);
 
   Serial.println(F("\n[INFO] Diagnostic cycle complete. Pausing 5 seconds."));
-  Serial.println(F("[NOTE] If any motor rotated backwards, swap its physical terminal leads.\n"));
+  Serial.println(F("[NOTE] If any wheel rotated backwards, swap its physical terminal leads.\n"));
   delay(5000);
 }
 
@@ -215,25 +219,37 @@ void loop() {
 // =====================================================
 
 void setLeftMotor(bool forward, int speed) {
-  if (forward) {
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-  } else {
+  if (speed <= 0) {
     digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
+    digitalWrite(IN2, LOW);
+    analogWrite(ENA, 0);
+  } else {
+    if (forward) {
+      digitalWrite(IN1, HIGH);
+      digitalWrite(IN2, LOW);
+    } else {
+      digitalWrite(IN1, LOW);
+      digitalWrite(IN2, HIGH);
+    }
+    analogWrite(ENA, constrain(speed, 0, 255));
   }
-  analogWrite(ENA, constrain(speed, 0, 255));
 }
 
 void setRightMotor(bool forward, int speed) {
-  if (forward) {
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
-  } else {
+  if (speed <= 0) {
     digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
+    digitalWrite(IN4, LOW);
+    analogWrite(ENB, 0);
+  } else {
+    if (forward) {
+      digitalWrite(IN3, HIGH);
+      digitalWrite(IN4, LOW);
+    } else {
+      digitalWrite(IN3, LOW);
+      digitalWrite(IN4, HIGH);
+    }
+    analogWrite(ENB, constrain(speed, 0, 255));
   }
-  analogWrite(ENB, constrain(speed, 0, 255));
 }
 
 void stopAllMotors() {

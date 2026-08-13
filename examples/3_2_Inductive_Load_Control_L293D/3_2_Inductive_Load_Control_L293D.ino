@@ -16,8 +16,8 @@
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
   - L293D Dual H-Bridge Driver IC / Motor Shield
-  - DC Gear Motor (Channel A)
-  - External Motor Power Supply (6V - 12V Battery Pack)
+  - DC BO Gear Motor (Nominal: 3V - 6V)
+  - External Motor Power Supply: 6.0V - 7.4V (e.g. 4x AA Battery Pack)
 
   Pin Configuration:
   -------------------------------------------------------------
@@ -28,38 +28,40 @@
   Pin 7 (2A / IN2)         Pin 3             Channel A Direction Input 2
   Pin 3, 6 (1Y, 2Y)        Motor Terminals   Channel A Motor Outputs
   Pin 4, 5, 12, 13 (GND)   GND               Common Ground & Heat Sink
-  Pin 8 (VCC2 / VM)        Battery (+)       Motor Power Supply (+6V to +12V)
-  Pin 16 (VCC1 / VSS)      5V                Logic Power Supply (Arduino 5V)
+  Pin 8 (VCC2 / VM)        Battery (+)       Motor Power Supply (6.0V - 7.4V Recommended)
+  Pin 16 (VCC1 / VSS)      5V                Logic Power Supply (Arduino 5V Regulated)
   -------------------------------------------------------------
 
-  Working Principle:
-  An H-bridge uses four switching elements to reverse the polarity of voltage applied across a DC motor.
-  When the motor switches off or reverses, the collapsing magnetic field in the motor windings generates
-  a high-voltage counter-electromotive force (back-EMF). The L293D contains internal clamping diodes
-  that safely shunt this inductive energy back into the power rails.
+  Electrical & Device Characteristics:
+  - The L293D incorporates internal flyback clamping diodes across each half-H driver to safely
+    dissipate inductive back-EMF when current is switched off.
+    (Note: If replacing L293D with a bare L298N IC, external fast-recovery diodes are required).
+  - Maximum continuous current per channel on L293D is 600mA (1.2A non-repetitive peak).
+  - Operating logic levels: High level input V_IH >= 2.3V, Low level input V_IL <= 1.5V.
 
   H-Bridge Truth Table:
-  +-----+-----+-----+------------------------+------------------------------------+
-  | ENA | IN1 | IN2 | Motor Operating State  | Electrical Condition               |
-  +-----+-----+-----+------------------------+------------------------------------+
-  |  H  |  H  |  L  | Forward (Clockwise)    | OUT1 = VM, OUT2 = GND (Current A->B)
-  |  H  |  L  |  H  | Reverse (Counter-CW)   | OUT1 = GND, OUT2 = VM (Current B->A)
-  |  H  |  L  |  L  | Active Dynamic Brake   | OUT1 = GND, OUT2 = GND (Low clamp) |
-  |  H  |  H  |  H  | Active Dynamic Brake   | OUT1 = VM,  OUT2 = VM  (High clamp)|
-  |  L  |  X  |  X  | Coasting Stop (High-Z) | Output buffers disabled (Floating) |
-  +-----+-----+-----+------------------------+------------------------------------+
+  +-----+-----+-----+------------------------+----------------------------------------------------+
+  | ENA | IN1 | IN2 | Motor Operating State  | Electrical & Physical Condition                    |
+  +-----+-----+-----+------------------------+----------------------------------------------------+
+  |  H  |  H  |  L  | Forward (Clockwise)    | OUT1 = VM - V_sat, OUT2 = GND + V_sat (Current A->B)
+  |  H  |  L  |  H  | Reverse (Counter-CW)   | OUT1 = GND + V_sat, OUT2 = VM - V_sat (Current B->A)
+  |  H  |  L  |  L  | Active Dynamic Brake   | OUT1 & OUT2 clamped to Low Rail (Back-EMF damped)   |
+  |  H  |  H  |  H  | Active Dynamic Brake   | OUT1 & OUT2 clamped to High Rail (Back-EMF damped)  |
+  |  L  |  X  |  X  | Coasting Stop (High-Z) | Output transistors disabled (Inertial spin-down)   |
+  +-----+-----+-----+------------------------+----------------------------------------------------+
 
   Expected Behavior:
-  1. State 1: Motor rotates Forward at full speed for 2.5 seconds.
+  1. State 1: Motor rotates Forward at full speed for 2.5 seconds (blocking delay for sequence demonstration).
   2. State 2: Motor executes an active dynamic brake for 1.0 second (rapid deceleration).
   3. State 3: Motor rotates Reverse at full speed for 2.5 seconds.
-  4. State 4: Motor coasts to a gradual stop for 2.0 seconds with drivers disabled.
-  5. State 5: Motor demonstrates PWM speed control across 40%, 70%, and 100% duty cycles.
-  6. Real-time state descriptions are logged to the Serial Monitor at 9600 baud.
+  4. State 4: Motor coasts to a gradual stop for 2.0 seconds with driver outputs in high impedance (High-Z).
+  5. State 5: Motor demonstrates PWM speed regulation across 40%, 70%, and 100% duty cycles.
+  6. Real-time state descriptions are streamed to the Serial Monitor at 9600 baud.
 
   Notes:
-  - Active dynamic braking shorts both motor terminals to GND or VM, inducing an opposing magnetic
-    flux that halts rotation quickly. Coasting simply disconnects power, allowing inertia to spin down.
+  - Dynamic braking works by shorting both motor terminals together through the low-side or high-side
+    transistors. The rotor's kinetic energy drives a generator current that creates opposing electromagnetic
+    counter-torque (Lenz's Law).
 
   Author/Organization:
   National Institute of Electronics & Information Technology
@@ -72,7 +74,7 @@
 // PIN DEFINITIONS
 // =====================================================
 
-#define ENA 5   // PWM Speed Enable
+#define ENA 5   // PWM Speed Enable (Timer0, ~976 Hz)
 #define IN1 2   // Direction Input 1
 #define IN2 3   // Direction Input 2
 
@@ -156,13 +158,13 @@ void loop() {
   // ---------------------------------------------------
   Serial.println(F("[STATE 5] PWM SPEED REGULATION DEMO:"));
 
-  Serial.println(F(" -> 40% Duty Cycle (ENA=102)"));
+  Serial.println(F(" -> ~40% Duty Cycle (ENA=102)"));
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   analogWrite(ENA, 102);
   delay(1500);
 
-  Serial.println(F(" -> 70% Duty Cycle (ENA=178)"));
+  Serial.println(F(" -> ~70% Duty Cycle (ENA=178)"));
   analogWrite(ENA, 178);
   delay(1500);
 

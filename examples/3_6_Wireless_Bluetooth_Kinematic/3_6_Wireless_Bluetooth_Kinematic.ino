@@ -5,22 +5,23 @@
   =========================================================
 
   Objective:
-  Interface an HC-05/HC-06 Bluetooth module via SoftwareSerial, implement a robust wireless teleoperation
-  protocol with multi-speed scaling, and integrate a fail-safe communication watchdog timer.
+  Interface an HC-05/HC-06 Bluetooth module via SoftwareSerial, implement a wireless teleoperation
+  protocol with multi-tier speed scaling, and integrate a communication timeout safety auto-stop.
 
   Description:
   Enables wireless remote control of a 2-wheel differential drive robot from a smartphone or PC Bluetooth terminal.
   Implements case-insensitive character parsing for directional movements (Forward, Backward, Point Turns, Differential Curves),
-  discrete speed presets ('0' - '9'), and an autonomous safety watchdog that halts the vehicle if the connection drops.
+  discrete speed presets ('0' - '9'), and an autonomous communication timeout monitor that halts the vehicle
+  if communication packets cease.
 
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
-  - HC-05 or HC-06 Bluetooth Serial Module
+  - HC-05 or HC-06 Bluetooth Serial Module (Default Baud: 9600)
   - L293D / L298N Dual H-Bridge Motor Driver
-  - 2x DC Yellow BO Gear Motors
+  - 2x DC Yellow BO Gear Motors (Nominal: 3V - 6V, 1:48 gear ratio)
   - 2WD Robotic Chassis with caster wheel
-  - External Motor Power Supply (6V - 12V Battery Pack)
-  - 1k Ohm & 2k Ohm Resistors (for 3.3V RX level shifter)
+  - External Motor Power Supply: 6.0V - 7.4V (e.g. 4x AA Battery Pack)
+  - Voltage Divider Resistors for 3.3V RX protection: 1k Ohm (D13 -> RXD) and 2k Ohm (RXD -> GND)
 
   Pin Configuration:
   -------------------------------------------------------------
@@ -30,21 +31,22 @@
   HC-05 GND                GND               Common Ground
   HC-05 TXD                Pin 12 (RX)       SoftwareSerial Receive from Bluetooth
   HC-05 RXD                Pin 13 (TX)       SoftwareSerial Transmit (via 3.3V divider)
-  ENA                      Pin 5 (PWM)       Left Motor Speed Enable
+  ENA                      Pin 5 (PWM)       Left Motor Speed Enable (Timer0)
   IN1                      Pin 2             Left Motor Direction Input 1
   IN2                      Pin 3             Left Motor Direction Input 2
   IN3                      Pin 4             Right Motor Direction Input 1
   IN4                      Pin 7             Right Motor Direction Input 2
-  ENB                      Pin 6 (PWM)       Right Motor Speed Enable
-  VCC2 / VM                Battery (+)       Motor Power (+6V to +12V)
-  GND                      GND & Batt (-)    Common Ground Busbar
+  ENB                      Pin 6 (PWM)       Right Motor Speed Enable (Timer0)
+  VCC2 / VM                Battery (+)       Motor Power Supply (6.0V - 7.4V Recommended)
+  GND                      GND & Batt (-)    Common Ground Busbar (Mandatory)
   -------------------------------------------------------------
 
   Working Principle:
-  The Bluetooth module acts as a wireless UART bridge at 9600 baud. As the smartphone controller
-  transmits single-byte ASCII command characters, the Arduino reads them via `SoftwareSerial`,
-  decodes the instruction, sets the motor states, and resets the watchdog countdown timer.
-  If no packet arrives within 1000ms while moving, the watchdog automatically stops all motors.
+  The Bluetooth module functions as a transparent wireless UART serial bridge at 9600 baud.
+  When the remote controller transmits single-byte ASCII characters, the Arduino reads them via
+  `SoftwareSerial`, decodes the instruction, sets the motor state, and resets the watchdog timer.
+  If no packet arrives within 1000ms while the vehicle is in motion, the communication watchdog
+  automatically commands a full stop to prevent runaway vehicle motion upon signal loss.
 
   Bluetooth Command Protocol:
   +----------------------+----------------------------------------------------+
@@ -58,7 +60,7 @@
   | 'I' / 'i'            | Forward-Right Differential Curve                   |
   | 'H' / 'h'            | Backward-Left Differential Curve                   |
   | 'J' / 'j'            | Backward-Right Differential Curve                  |
-  | 'S' / 's' / 'D' / 'd'| Full Stop (All motors disabled)                    |
+  | 'S' / 's' / 'D' / 'd'| Full Stop (All motor drivers disabled)             |
   | '0' .. '9'           | Speed Presets (0 = 70 PWM ... 9 = 255 PWM)         |
   | 'Q' / 'q'            | Maximum Speed (255 PWM)                            |
   +----------------------+----------------------------------------------------+
@@ -66,12 +68,12 @@
   Expected Behavior:
   1. Pairing: HC-05 LED blinks rapidly until paired with smartphone (default PIN: 1234 or 0000).
   2. Teleoperation: Robot responds immediately to incoming touch / D-pad commands.
-  3. Safety Timeout: If out of range or disconnected, the robot halts within 1.0 second.
+  3. Safety Timeout: If out of range or disconnected, the robot halts within 1000ms.
   4. Diagnostics are displayed on the Arduino Serial Monitor at 9600 baud.
 
-  Notes:
-  - HC-05 RXD pin is 3.3V logic tolerant. A simple 1k / 2k resistor divider from Arduino D13 (TX)
-    protects the Bluetooth module from 5V logic overvoltage.
+  Electrical Safety Notes:
+  - The HC-05 RXD pin is rated for 3.3V logic. Connecting Arduino D13 (5V output) directly without
+    the 1k/2k resistor voltage divider may degrade or damage the Bluetooth baseband IC over time.
 
   Author/Organization:
   National Institute of Electronics & Information Technology
@@ -91,12 +93,12 @@
 #define BT_TX_PIN 13   // Arduino TX -> HC-05 RXD (via 3.3V divider)
 
 // Left Motor Driver Pins
-#define ENA 5
+#define ENA 5   // Timer0 PWM
 #define IN1 2
 #define IN2 3
 
 // Right Motor Driver Pins
-#define ENB 6
+#define ENB 6   // Timer0 PWM
 #define IN3 4
 #define IN4 7
 
@@ -108,7 +110,7 @@ SoftwareSerial BTSerial(BT_RX_PIN, BT_TX_PIN);
 
 int currentSpeed = 200; // Default cruise PWM speed (0 - 255)
 
-// Watchdog safety timer
+// Communication timeout watchdog timer
 unsigned long lastCommandTime = 0;
 const unsigned long WATCHDOG_TIMEOUT_MS = 1000;
 bool isMoving = false;
@@ -151,7 +153,7 @@ void setup() {
   Serial.println(F("[INFO] System initialized"));
   Serial.println(F("[INFO] Bluetooth interface ready on Pins 12(RX) and 13(TX)"));
   Serial.println(F("[INFO] Commands: F=Forward, B=Back, L=Left, R=Right, S=Stop, 0-9=Speed"));
-  Serial.println(F("[INFO] Watchdog fail-safe timeout: 1000ms\n"));
+  Serial.println(F("[INFO] Communication watchdog timeout: 1000ms\n"));
 
   BTSerial.println(F("NIELIT Bluetooth Robocar Ready!"));
   lastCommandTime = millis();
@@ -174,9 +176,9 @@ void loop() {
     handleCommand(cmd, "Serial");
   }
 
-  // Watchdog Safety Check: Stop robot if communication drops while in motion
+  // Communication Timeout Check: Stop robot if command stream ceases while in motion
   if (isMoving && (millis() - lastCommandTime > WATCHDOG_TIMEOUT_MS)) {
-    Serial.println(F("[WATCHDOG] Signal timeout reached. Auto-Stopping."));
+    Serial.println(F("[WATCHDOG] Communication timeout reached. Auto-Stopping."));
     stopRobot();
   }
 }

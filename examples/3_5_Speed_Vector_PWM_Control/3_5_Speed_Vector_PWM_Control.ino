@@ -6,50 +6,54 @@
 
   Objective:
   Regulate mobile robot velocity using Pulse Width Modulation (PWM), implement soft acceleration
-  and deceleration ramps to mitigate inrush currents, and calibrate differential motor trim for straight-line tracking.
+  and deceleration ramps to reduce inrush current surges, and calibrate differential motor trim for straight-line tracking.
 
   Description:
-  Demonstrates continuous velocity vector regulation using Arduino timer PWM pins (D5 and D6).
-  Tests multi-tier speed presets (Creep, Cruise, Fast, Maximum), performs smooth acceleration/deceleration
-  ramps, and provides hardware trim adjustment offsets to balance physical differences between gearboxes.
+  Demonstrates continuous velocity vector regulation using Arduino hardware PWM pins (D5 and D6 on Timer0).
+  Tests multi-tier speed presets (Creep, Cruise, Fast, Maximum), performs gradual acceleration and
+  deceleration ramps, and provides differential hardware trim offsets to balance mechanical gearbox variances.
 
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
   - L293D / L298N Dual H-Bridge Motor Driver
-  - 2x DC Yellow BO Gear Motors
+  - 2x DC Yellow BO Gear Motors (Nominal: 3V - 6V, 1:48 gear ratio)
   - 2WD Robotic Chassis with caster wheel
-  - External Motor Power Supply (6V - 12V Battery Pack)
+  - External Motor Power Supply: 6.0V - 7.4V (e.g. 4x AA Battery Pack)
 
   Pin Configuration:
   -------------------------------------------------------------
   Driver / Component Pin   Arduino UNO Pin   Function
   -------------------------------------------------------------
-  ENA                      Pin 5 (PWM)       Left Motor PWM Speed
+  ENA                      Pin 5 (PWM)       Left Motor PWM Speed (Timer0 ~976 Hz)
   IN1                      Pin 2             Left Motor Direction Input 1
   IN2                      Pin 3             Left Motor Direction Input 2
   IN3                      Pin 4             Right Motor Direction Input 1
   IN4                      Pin 7             Right Motor Direction Input 2
-  ENB                      Pin 6 (PWM)       Right Motor PWM Speed
-  VCC2 / VM                Battery (+)       Motor Power Supply (+6V to +12V)
-  GND                      GND & Batt (-)    Common Ground Busbar
+  ENB                      Pin 6 (PWM)       Right Motor PWM Speed (Timer0 ~976 Hz)
+  VCC2 / VM                Battery (+)       Motor Power Supply (6.0V - 7.4V Recommended)
+  GND                      GND & Batt (-)    Common Ground Busbar (Mandatory)
   -------------------------------------------------------------
 
-  Working Principle:
+  Working Principle & PWM Mathematics:
   DC motor rotational speed is proportional to the average voltage across its terminals.
-  Pulse Width Modulation (PWM) rapidly chops the DC supply voltage at a fixed frequency (~980 Hz on Timer0).
-  By adjusting the duty cycle ($D = \frac{T_{on}}{T_{total}} \times 100\%$), the effective motor voltage
-  is precisely controlled from 0V ($D=0\%$) to VM ($D=100\%$).
-  Soft starting ramps avoid sudden current surges that cause battery voltage collapse and brownout resets.
+  Pulse Width Modulation (PWM) rapidly chops the DC supply voltage at a fixed frequency (~976.56 Hz on Timer0).
+  The effective average voltage applied to the motor terminal is:
+    V_avg = (Duty_Cycle_Fraction) * (V_motor - V_driver_drop)
+  Where Duty Cycle Fraction on 8-bit AVR is:
+    Duty Cycle (%) = (analogWrite_Value / 255.0) * 100%
+  Soft starting ramps reduce sudden inrush current demand and assist battery voltage stability,
+  reducing the likelihood of brownout resets on low-capacity cells.
 
   Expected Behavior:
-  1. Section 1 (Presets): Robot tests 4 discrete speed tiers (PWM: 90, 160, 220, 255) for 2.0s each.
-  2. Section 2 (Soft Start): Robot smoothly accelerates from PWM 60 to 255 in 5-unit increments.
-  3. Section 3 (Soft Stop): Robot smoothly decelerates from PWM 255 down to 60, then halts cleanly.
+  1. Section 1 (Presets): Robot tests 4 discrete speed tiers (PWM: 90, 160, 220, 255) for 2.0s each (blocking sequence).
+  2. Section 2 (Soft Start): Robot ramps PWM from 60 to 255 in 5-unit steps (40ms interval).
+  3. Section 3 (Soft Stop): Robot ramps PWM from 255 down to 60 in 5-unit steps, then halts.
   4. Real-time PWM percentages are streamed to Serial Monitor at 9600 baud.
 
   Notes:
-  - If the robot veers to one side during straight forward drive due to motor manufacturing tolerances,
-    adjust `LEFT_MOTOR_TRIM` or `RIGHT_MOTOR_TRIM` (range: -50 to +50) to achieve balanced trajectory.
+  - If the vehicle veers to one side during straight forward drive due to motor manufacturing tolerances,
+    adjust `LEFT_MOTOR_TRIM` or `RIGHT_MOTOR_TRIM` (range: -50 to +50) to achieve balanced straight-line motion.
+  - Requires physical hardware verification to calibrate trim values under actual load.
 
   Author/Organization:
   National Institute of Electronics & Information Technology
@@ -62,12 +66,12 @@
 // PIN DEFINITIONS
 // =====================================================
 
-// Left Motor Driver Pins (ENA must be a hardware PWM pin: D5)
+// Left Motor Driver Pins (ENA must be a hardware PWM pin: D5 on Timer0)
 #define ENA 5
 #define IN1 2
 #define IN2 3
 
-// Right Motor Driver Pins (ENB must be a hardware PWM pin: D6)
+// Right Motor Driver Pins (ENB must be a hardware PWM pin: D6 on Timer0)
 #define ENB 6
 #define IN3 4
 #define IN4 7
@@ -111,7 +115,7 @@ void setup() {
   Serial.println(F(" NIELIT Practical 3.5: PWM Speed Vector Regulation"));
   Serial.println(F("=================================================="));
   Serial.println(F("[INFO] System initialized"));
-  Serial.println(F("[INFO] Hardware PWM Channels: ENA=Pin5, ENB=Pin6 (Timer0 ~980Hz)"));
+  Serial.println(F("[INFO] Hardware PWM Channels: ENA=Pin5, ENB=Pin6 (Timer0 ~976Hz)"));
   Serial.println(F("[INFO] Starting PWM speed vector test in 2s...\n"));
   delay(2000);
 }
