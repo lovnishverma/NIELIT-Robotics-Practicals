@@ -1,0 +1,42 @@
+#######################################
+# Syntax Highlighting Map For NIELIT Robotics Practicals
+#######################################
+
+#######################################
+# Datatypes and Classes (KEYWORD1)
+#######################################
+
+NIELIT	KEYWORD1
+Robotics	KEYWORD1
+MotorDriver	KEYWORD1
+DifferentialDrive	KEYWORD1
+RoboCar	KEYWORD1
+MotorDirection	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+version	KEYWORD2
+printLibraryInfo	KEYWORD2
+printPracticalHeader	KEYWORD2
+moveForward	KEYWORD2
+moveBackward	KEYWORD2
+turnLeft	KEYWORD2
+turnRight	KEYWORD2
+spinLeft	KEYWORD2
+spinRight	KEYWORD2
+stopRobot	KEYWORD2
+setSpeed	KEYWORD2
+setMotorSpeed	KEYWORD2
+setMotorState	KEYWORD2
+
+#######################################
+# Constants and Literals (LITERAL1)
+#######################################
+
+NIELIT_ROBOTICS_PRACTICALS_VERSION	LITERAL1
+FORWARD	LITERAL1
+BACKWARD	LITERAL1
+RELEASE	LITERAL1
+BRAKE	LITERAL1

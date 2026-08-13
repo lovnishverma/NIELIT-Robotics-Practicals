@@ -1,0 +1,8 @@
+NIELIT Robotics Practicals Library - Quick Install Guide
+
+1. Arduino IDE -> Sketch -> Include Library -> Add .ZIP Library...
+2. Select the NIELIT-Robotics-Practicals ZIP file or folder.
+3. Open Arduino IDE -> File -> Examples -> NIELIT Robotics Practicals.
+4. Select practicals 3_1_Robotics_Assembly_Power_Distribution ... 3_8_Obstacle_Avoiding_Vehicle.
+
+Install any required dependencies (such as SoftwareSerial or Servo) as described in README.md.
