@@ -14,12 +14,12 @@
   -------------------------------------------------------------
   L293D Pin             Arduino Pin      Connected To
   -------------------------------------------------------------
-  ENA (Pin 1)           Pin 9 (PWM)      Left Motor Speed
-  IN1 (Pin 2)           Pin 5            Left Motor Dir A
-  IN2 (Pin 7)           Pin 6            Left Motor Dir B
-  IN3 (Pin 10)          Pin 10           Right Motor Dir A
-  IN4 (Pin 15)          Pin 11           Right Motor Dir B
-  ENB (Pin 9)           Pin 3 (PWM)      Right Motor Speed
+  ENA (Pin 1)           Pin 5 (PWM)      Left Motor Speed
+  IN1 (Pin 2)           Pin 2            Left Motor Dir A
+  IN2 (Pin 7)           Pin 3            Left Motor Dir B
+  IN3 (Pin 10)          Pin 4            Right Motor Dir A
+  IN4 (Pin 15)          Pin 7            Right Motor Dir B
+  ENB (Pin 9)           Pin 6 (PWM)      Right Motor Speed
   OUT1, OUT2            Terminals        Left DC Gear Motor
   OUT3, OUT4            Terminals        Right DC Gear Motor
   VCC1                  5V               Arduino 5V
@@ -29,14 +29,14 @@
 */
 
 // Left Motor Driver Pins
-const int ENA = 9;
-const int IN1 = 5;
-const int IN2 = 6;
+#define ENA 5
+#define IN1 2
+#define IN2 3
 
 // Right Motor Driver Pins
-const int ENB = 3;
-const int IN3 = 10;
-const int IN4 = 11;
+#define ENB 6
+#define IN3 4
+#define IN4 7
 
 void setup() {
   Serial.begin(9600);

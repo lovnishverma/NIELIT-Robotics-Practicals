@@ -20,31 +20,33 @@
   -------------------------------------------------------------
   VCC                   5V               5V Power Rail
   GND                   GND              Common Ground
-  TRIG                  Pin 12           Trigger Pulse (Output)
-  ECHO                  Pin 13           Echo Time (Input)
+  TRIG                  Pin 9            Trigger Pulse (Output)
+  ECHO                  Pin 10           Echo Time (Input)
   -------------------------------------------------------------
   Motor Driver Pin      Arduino Pin      Description
   -------------------------------------------------------------
-  ENA                   Pin 9 (PWM)      Left Motor Speed
-  IN1                   Pin 5            Left Motor Dir A
-  IN2                   Pin 6            Left Motor Dir B
-  IN3                   Pin 10           Right Motor Dir A
-  IN4                   Pin 11           Right Motor Dir B
-  ENB                   Pin 3 (PWM)      Right Motor Speed
+  ENA                   Pin 5 (PWM)      Left Motor Speed
+  IN1                   Pin 2            Left Motor Dir A
+  IN2                   Pin 3            Left Motor Dir B
+  IN3                   Pin 4            Right Motor Dir A
+  IN4                   Pin 7            Right Motor Dir B
+  ENB                   Pin 6 (PWM)      Right Motor Speed
   -------------------------------------------------------------
 */
 
 // Ultrasonic Sensor Pins
-const int TRIG_PIN = 12;
-const int ECHO_PIN = 13;
+#define TRIG 9
+#define ECHO 10
 
-// Motor Driver Pins
-const int ENA = 9;
-const int IN1 = 5;
-const int IN2 = 6;
-const int ENB = 3;
-const int IN3 = 10;
-const int IN4 = 11;
+// Left Motor Driver Pins
+#define ENA 5
+#define IN1 2
+#define IN2 3
+
+// Right Motor Driver Pins
+#define ENB 6
+#define IN3 4
+#define IN4 7
 
 // Obstacle Avoidance Thresholds
 const int SAFE_DISTANCE_CM     = 25; // Stop & turn if object is closer than 25cm
@@ -58,8 +60,8 @@ void setup() {
   Serial.begin(9600);
 
   // Setup Ultrasonic Sensor Pins
-  pinMode(TRIG_PIN, OUTPUT);
-  pinMode(ECHO_PIN, INPUT);
+  pinMode(TRIG, OUTPUT);
+  pinMode(ECHO, INPUT);
 
   // Setup Motor Pins
   pinMode(ENA, OUTPUT);
@@ -129,16 +131,16 @@ void loop() {
 
 long readDistanceCM() {
   // Clear trigger pin
-  digitalWrite(TRIG_PIN, LOW);
+  digitalWrite(TRIG, LOW);
   delayMicroseconds(2);
 
   // Send 10 microsecond ultrasonic pulse
-  digitalWrite(TRIG_PIN, HIGH);
+  digitalWrite(TRIG, HIGH);
   delayMicroseconds(10);
-  digitalWrite(TRIG_PIN, LOW);
+  digitalWrite(TRIG, LOW);
 
   // Read echo travel time in microseconds (timeout at 30ms / ~5 meters)
-  long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+  long duration = pulseIn(ECHO, HIGH, 30000);
 
   if (duration == 0) {
     // No echo received / out of range

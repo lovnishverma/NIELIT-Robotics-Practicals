@@ -31,12 +31,12 @@
   -------------------------------------------------------------
   Motor Driver Pin      Arduino Pin
   -------------------------------------------------------------
-  ENA                   Pin 9 (PWM)
-  IN1                   Pin 5
-  IN2                   Pin 6
-  IN3                   Pin 10
-  IN4                   Pin 11
-  ENB                   Pin 3 (PWM)
+  ENA                   Pin 5 (PWM)
+  IN1                   Pin 2
+  IN2                   Pin 3
+  IN3                   Pin 4
+  IN4                   Pin 7
+  ENB                   Pin 6 (PWM)
   -------------------------------------------------------------
 */
 
@@ -47,13 +47,15 @@
 // Arduino Pin 13 (TX) -> HC-05 RXD (Use 1k/2k resistor voltage divider to 3.3V)
 SoftwareSerial BTSerial(12, 13);
 
-// Motor Pins
-const int ENA = 9;
-const int IN1 = 5;
-const int IN2 = 6;
-const int ENB = 3;
-const int IN3 = 10;
-const int IN4 = 11;
+// Left Motor Pins
+#define ENA 5
+#define IN1 2
+#define IN2 3
+
+// Right Motor Pins
+#define ENB 6
+#define IN3 4
+#define IN4 7
 
 // Current operating speed (0 to 255)
 int currentSpeed = 200;

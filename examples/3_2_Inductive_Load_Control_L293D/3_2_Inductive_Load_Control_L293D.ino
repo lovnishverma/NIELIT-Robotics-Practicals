@@ -22,10 +22,10 @@
   -------------------------------------------------------------
   L293D Pin             Arduino Pin      Function
   -------------------------------------------------------------
-  Pin 1 (1,2EN)         Pin 9 (PWM)      Channel A Enable
-  Pin 2 (1A / IN1)      Pin 5            Channel A Input 1
-  Pin 7 (2A / IN2)      Pin 6            Channel A Input 2
-  Pin 3, 6 (1Y, 2Y)     Motor A Terminals DC Motor Output
+  Pin 1 (1,2EN)         Pin 5 (PWM)      Channel A Enable
+  Pin 2 (1A / IN1)      Pin 2            Channel A Input 1
+  Pin 7 (2A / IN2)      Pin 3            Channel A Input 2
+  Pin 3, 6 (1Y, 2Y)     Motor Terminals  DC Motor Output
   Pin 4, 5, 12, 13      GND              Common Ground & Heat Sink
   Pin 8 (VCC2 / VM)     +6V to +12V      Motor Power Supply
   Pin 16 (VCC1 / VSS)   5V               Logic Power Supply
@@ -33,9 +33,9 @@
 */
 
 // Driver Control Pins
-const int ENA = 9;   // Speed / Enable Pin (PWM)
-const int IN1 = 5;   // Direction Control 1
-const int IN2 = 6;   // Direction Control 2
+#define ENA 5   // Speed / Enable Pin (PWM)
+#define IN1 2   // Direction Control 1
+#define IN2 3   // Direction Control 2
 
 void setup() {
   Serial.begin(9600);

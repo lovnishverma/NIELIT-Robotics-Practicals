@@ -14,12 +14,12 @@
   -------------------------------------------------------------
   L293D / Driver Pin    Arduino Pin      Description
   -------------------------------------------------------------
-  ENABLE 1 (ENA)        Pin 9 (PWM)      Left Motor Speed Enable
-  INPUT 1 (IN1)         Pin 5            Left Motor Direction A
-  INPUT 2 (IN2)         Pin 6            Left Motor Direction B
-  INPUT 3 (IN3)         Pin 10           Right Motor Direction A
-  INPUT 4 (IN4)         Pin 11           Right Motor Direction B
-  ENABLE 2 (ENB)        Pin 3 (PWM)      Right Motor Speed Enable
+  ENABLE 1 (ENA)        Pin 5 (PWM)      Left Motor Speed Enable
+  INPUT 1 (IN1)         Pin 2            Left Motor Direction A
+  INPUT 2 (IN2)         Pin 3            Left Motor Direction B
+  INPUT 3 (IN3)         Pin 4            Right Motor Direction A
+  INPUT 4 (IN4)         Pin 7            Right Motor Direction B
+  ENABLE 2 (ENB)        Pin 6 (PWM)      Right Motor Speed Enable
   VCC1 (Logic 5V)       5V               Arduino 5V Rail
   VCC2 / VM (Motor)     External Battery Positive (+6V to +12V)
   GND (All GND pins)    GND & Batt (-)   COMMON GROUND (Essential!)
@@ -27,17 +27,17 @@
 */
 
 // --- Left Motor Pin Definitions ---
-const int ENA = 9;   // Enable Left Motor (PWM)
-const int IN1 = 5;   // Left Motor Input 1
-const int IN2 = 6;   // Left Motor Input 2
+#define ENA 5   // Enable Left Motor (PWM)
+#define IN1 2   // Left Motor Input 1
+#define IN2 3   // Left Motor Input 2
 
 // --- Right Motor Pin Definitions ---
-const int ENB = 3;   // Enable Right Motor (PWM)
-const int IN3 = 10;  // Right Motor Input 1
-const int IN4 = 11;  // Right Motor Input 2
+#define ENB 6   // Enable Right Motor (PWM)
+#define IN3 4   // Right Motor Input 1
+#define IN4 7   // Right Motor Input 2
 
 // Built-in status indicator
-const int STATUS_LED = 13;
+#define STATUS_LED 13
 
 void setup() {
   // Initialize Serial Monitor for telemetry

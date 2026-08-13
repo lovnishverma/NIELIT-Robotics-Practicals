@@ -23,31 +23,32 @@
   Module Pin            Arduino Pin      Description
   -------------------------------------------------------------
   Left IR Sensor (OUT)  Pin 2 (Digital)  Left Track Sensor
-  Right IR Sensor (OUT) Pin 4 (Digital)  Right Track Sensor
+  Right IR Sensor (OUT) Pin 3 (Digital)  Right Track Sensor
   Sensor VCC / GND      5V / GND         Power supply
   -------------------------------------------------------------
   Motor Driver Pin      Arduino Pin      Description
   -------------------------------------------------------------
-  ENA                   Pin 9 (PWM)      Left Motor Speed
-  IN1                   Pin 5            Left Motor Dir A
-  IN2                   Pin 6            Left Motor Dir B
+  ENA                   Pin 5 (PWM)      Left Motor Speed
+  IN1                   Pin 8            Left Motor Dir A
+  IN2                   Pin 9            Left Motor Dir B
   IN3                   Pin 10           Right Motor Dir A
   IN4                   Pin 11           Right Motor Dir B
-  ENB                   Pin 3 (PWM)      Right Motor Speed
+  ENB                   Pin 6 (PWM)      Right Motor Speed
   -------------------------------------------------------------
 */
 
 // IR Sensor Pins (Digital output from IR modules with onboard comparators)
-const int SENSOR_LEFT  = 2;
-const int SENSOR_RIGHT = 4;
+#define LEFT_SENSOR  2
+#define RIGHT_SENSOR 3
 
 // Motor Driver Pins
-const int ENA = 9;
-const int IN1 = 5;
-const int IN2 = 6;
-const int ENB = 3;
-const int IN3 = 10;
-const int IN4 = 11;
+#define ENA 5
+#define IN1 8
+#define IN2 9
+
+#define ENB 6
+#define IN3 10
+#define IN4 11
 
 // Base cruising and turning speed (PWM 0-255)
 const int FORWARD_SPEED = 160;
@@ -61,8 +62,8 @@ void setup() {
   Serial.begin(9600);
 
   // Initialize Sensors
-  pinMode(SENSOR_LEFT, INPUT);
-  pinMode(SENSOR_RIGHT, INPUT);
+  pinMode(LEFT_SENSOR, INPUT);
+  pinMode(RIGHT_SENSOR, INPUT);
 
   // Initialize Motor Control Pins
   pinMode(ENA, OUTPUT);
@@ -86,8 +87,8 @@ void setup() {
 void loop() {
   // Read Digital Values from IR Sensor Modules
   // Most modules output LOW (0) when reflecting white and HIGH (1) over dark/black surface
-  int rawLeft  = digitalRead(SENSOR_LEFT);
-  int rawRight = digitalRead(SENSOR_RIGHT);
+  int rawLeft  = digitalRead(LEFT_SENSOR);
+  int rawRight = digitalRead(RIGHT_SENSOR);
 
   // Determine normalized line detection boolean
   bool leftOnLine  = BLACK_LINE_MODE ? (rawLeft == HIGH)  : (rawLeft == LOW);

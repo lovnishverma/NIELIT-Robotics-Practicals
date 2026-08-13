@@ -15,25 +15,25 @@
   -------------------------------------------------------------
   L293D / Driver Pin    Arduino Pin      Description
   -------------------------------------------------------------
-  ENA                   Pin 9 (PWM)      Left Motor Speed
-  IN1                   Pin 5            Left Motor Input 1
-  IN2                   Pin 6            Left Motor Input 2
-  IN3                   Pin 10           Right Motor Input 1
-  IN4                   Pin 11           Right Motor Input 2
-  ENB                   Pin 3 (PWM)      Right Motor Speed
+  ENA                   Pin 5 (PWM)      Left Motor Speed
+  IN1                   Pin 2            Left Motor Input 1
+  IN2                   Pin 3            Left Motor Input 2
+  IN3                   Pin 4            Right Motor Input 1
+  IN4                   Pin 7            Right Motor Input 2
+  ENB                   Pin 6 (PWM)      Right Motor Speed
   VCC2 (VM)             +6V to +12V      Battery Pack Positive (+)
   GND                   GND              Common Ground
   -------------------------------------------------------------
 */
 
-// Motor Driver Pins (ENA and ENB MUST be connected to PWM ~ pins)
-const int ENA = 9;   // Left Motor PWM Speed
-const int IN1 = 5;
-const int IN2 = 6;
+// Motor Driver Pins (ENA and ENB MUST be connected to PWM ~ pins: 5, 6)
+#define ENA 5   // Left Motor PWM Speed
+#define IN1 2
+#define IN2 3
 
-const int ENB = 3;   // Right Motor PWM Speed
-const int IN3 = 10;
-const int IN4 = 11;
+#define ENB 6   // Right Motor PWM Speed
+#define IN3 4
+#define IN4 7
 
 // Motor Trim Offsets (Adjust if one motor runs faster than the other)
 // Range: -50 to +50

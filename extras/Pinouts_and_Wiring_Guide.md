@@ -19,36 +19,53 @@ This reference guide details hardware connections, motor driver architectures, s
                +-------+
 ```
 
-### Standard Arduino UNO Mapping:
+---
+
+## 2. Standard Pin Configurations
+
+### Standard 2WD Chassis / Motor & Bluetooth Configuration (Practicals 3.1 - 3.6, 3.8)
 | Driver Function | L293D IC Pin | Arduino UNO Pin | Purpose |
 |-----------------|--------------|-----------------|---------|
-| **ENA** | Pin 1 | **D9** (PWM) | Left Motor Speed Control |
-| **IN1** | Pin 2 | **D5** | Left Motor Direction A |
-| **IN2** | Pin 7 | **D6** | Left Motor Direction B |
-| **IN3** | Pin 10 | **D10** | Right Motor Direction A |
-| **IN4** | Pin 15 | **D11** | Right Motor Direction B |
-| **ENB** | Pin 9 | **D3** (PWM) | Right Motor Speed Control |
+| **ENA** | Pin 1 | **D5** (PWM) | Left Motor Speed Control |
+| **IN1** | Pin 2 | **D2** | Left Motor Direction A |
+| **IN2** | Pin 7 | **D3** | Left Motor Direction B |
+| **IN3** | Pin 10 | **D4** | Right Motor Direction A |
+| **IN4** | Pin 15 | **D7** | Right Motor Direction B |
+| **ENB** | Pin 9 | **D6** (PWM) | Right Motor Speed Control |
 | **VCC1** | Pin 16 | **5V** | Logic Power from Arduino |
 | **VCC2 / VM** | Pin 8 | **Battery (+)** | Motor Power (+6V to +12V) |
 | **GND** | Pins 4, 5, 12, 13 | **GND** | Common Ground (Arduino + Battery) |
 
+### Line Follower Configuration (Practical 3.7)
+*Avoids pin conflict since D2 and D3 are dedicated to IR Line Sensors:*
+| Function | Arduino UNO Pin | Description |
+| :--- | :--- | :--- |
+| **LEFT_SENSOR** | **D2** | Digital Line Detection (Left IR) |
+| **RIGHT_SENSOR** | **D3** | Digital Line Detection (Right IR) |
+| **ENA** | **D5 (PWM)** | Left Motor Speed |
+| **IN1** | **D8** | Left Motor Direction A |
+| **IN2** | **D9** | Left Motor Direction B |
+| **ENB** | **D6 (PWM)** | Right Motor Speed |
+| **IN3** | **D10** | Right Motor Direction A |
+| **IN4** | **D11** | Right Motor Direction B |
+
 ---
 
-## 2. Sensor & Module Pin Assignments
+## 3. Sensor & Module Pin Assignments
 
 ### HC-SR04 Ultrasonic Distance Sensor (Practical 3.8)
 | HC-SR04 Pin | Arduino Pin | Description |
 |-------------|-------------|-------------|
-| **VCC** | 5V | 5V Power |
-| **TRIG** | **D12** | Ultrasonic trigger pulse output |
-| **ECHO** | **D13** | Echo return pulse input |
-| **GND** | GND | Ground |
+| **VCC** | 5V | 5V Power Rail |
+| **TRIG** | **D9** | Ultrasonic trigger pulse output |
+| **ECHO** | **D10** | Echo return pulse input |
+| **GND** | GND | Common Ground |
 
 ### IR Line Tracking Sensors (TCRT5000) (Practical 3.7)
 | Sensor Module | Arduino Pin | Description |
 |---------------|-------------|-------------|
-| **Left IR (OUT)** | **D2** | Digital Line Detection (Left) |
-| **Right IR (OUT)** | **D4** | Digital Line Detection (Right) |
+| **Left IR (OUT)** | **D2** (`LEFT_SENSOR`) | Digital Line Detection (Left) |
+| **Right IR (OUT)** | **D3** (`RIGHT_SENSOR`) | Digital Line Detection (Right) |
 | **VCC** | 5V | Power Supply |
 | **GND** | GND | Common Ground |
 
@@ -58,11 +75,11 @@ This reference guide details hardware connections, motor driver architectures, s
 | **VCC** | 5V | 5V Power Supply |
 | **GND** | GND | Common Ground |
 | **TXD** | **D12** (RX) | SoftwareSerial Receive |
-| **RXD** | **D13** (TX) | SoftwareSerial Transmit (Use 1k/2k divider for 3.3V) |
+| **RXD** | **D13** (TX) | SoftwareSerial Transmit (via 3.3V divider) |
 
 ---
 
-## 3. Power Distribution Architecture
+## 4. Power Distribution Architecture
 
 ```text
     +-----------------------------------------------+

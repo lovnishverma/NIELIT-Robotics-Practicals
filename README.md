@@ -98,25 +98,70 @@ The practical series utilizes standard laboratory robotics equipment:
 
 The standard pin configuration across the NIELIT Robotics series is mapped as follows:
 
-### Motor Driver (L293D / L298N)
+### 1. Standard Motor Driver Pins (Practicals 3.1 - 3.6, 3.8)
+```cpp
+// Motor Pins
+#define IN1 2
+#define IN2 3
+#define IN3 4
+#define IN4 7
+#define ENA 5
+#define ENB 6
+```
+
 | Function | Arduino UNO Pin | Description |
 | :--- | :--- | :--- |
-| **ENA** | **Pin 9 (PWM)** | Left Motor Speed Control |
-| **IN1** | **Pin 5** | Left Motor Direction A |
-| **IN2** | **Pin 6** | Left Motor Direction B |
+| **ENA** | **Pin 5 (PWM)** | Left Motor Speed Control |
+| **IN1** | **Pin 2** | Left Motor Direction A |
+| **IN2** | **Pin 3** | Left Motor Direction B |
+| **IN3** | **Pin 4** | Right Motor Direction A |
+| **IN4** | **Pin 7** | Right Motor Direction B |
+| **ENB** | **Pin 6 (PWM)** | Right Motor Speed Control |
+
+### 2. Ultrasonic Sensor (Practical 3.8)
+```cpp
+// Ultrasonic
+#define TRIG 9
+#define ECHO 10
+```
+
+| HC-SR04 Pin | Arduino UNO Pin | Description |
+| :--- | :--- | :--- |
+| **TRIG** | **Pin 9** | Ultrasonic Trigger Pulse Output |
+| **ECHO** | **Pin 10** | Echo Return Pulse Input |
+
+### 3. Line Follower IR Sensors & Motor Pins (Practical 3.7)
+*Avoids pin conflicts with D2 & D3 used by the IR Line Tracking Sensors:*
+```cpp
+// IR Sensor Pins
+#define LEFT_SENSOR 2
+#define RIGHT_SENSOR 3
+
+// Motor Driver Pins
+#define ENA 5
+#define IN1 8
+#define IN2 9
+#define ENB 6
+#define IN3 10
+#define IN4 11
+```
+
+| Module / Motor Pin | Arduino UNO Pin | Description |
+| :--- | :--- | :--- |
+| **LEFT_SENSOR** | **Pin 2** | Digital Line Detection (Left IR) |
+| **RIGHT_SENSOR** | **Pin 3** | Digital Line Detection (Right IR) |
+| **ENA** | **Pin 5 (PWM)** | Left Motor Speed Control |
+| **IN1** | **Pin 8** | Left Motor Direction A |
+| **IN2** | **Pin 9** | Left Motor Direction B |
+| **ENB** | **Pin 6 (PWM)** | Right Motor Speed Control |
 | **IN3** | **Pin 10** | Right Motor Direction A |
 | **IN4** | **Pin 11** | Right Motor Direction B |
-| **ENB** | **Pin 3 (PWM)** | Right Motor Speed Control |
 
-### Sensors & Wireless Modules
-| Module | Module Pin | Arduino UNO Pin |
+### 4. Wireless Bluetooth Module (Practical 3.6)
+| HC-05 / HC-06 Pin | Arduino UNO Pin | Notes |
 | :--- | :--- | :--- |
-| **HC-SR04 Ultrasonic** | `TRIG` | **Pin 12** |
-| **HC-SR04 Ultrasonic** | `ECHO` | **Pin 13** |
-| **IR Line Sensor Left** | `OUT` | **Pin 2** |
-| **IR Line Sensor Right** | `OUT` | **Pin 4** |
-| **HC-05 / HC-06 Bluetooth** | `TXD` | **Pin 12** (Arduino RX via SoftwareSerial) |
-| **HC-05 / HC-06 Bluetooth** | `RXD` | **Pin 13** (Arduino TX via 3.3V divider) |
+| **TXD** | **Pin 12** (RX) | SoftwareSerial Receive |
+| **RXD** | **Pin 13** (TX) | SoftwareSerial Transmit (via 3.3V voltage divider) |
 
 > **Note:** For more detailed pinout diagrams and driver IC schematics, refer to [`extras/Pinouts_and_Wiring_Guide.md`](file:///c:/Users/princ/Desktop/NIELIT-Robotics-Practicals/extras/Pinouts_and_Wiring_Guide.md).
 
