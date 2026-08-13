@@ -1,49 +1,106 @@
 /*
+  =========================================================
+  NIELIT Robotics Practicals
   Practical 3.4: Kinematic Maneuvers — 2-Wheel Robocar Basic Movements
-  Course: NIELIT Robotics Practicals
+  =========================================================
+
+  Objective:
+  Implement modular kinematic motion primitives for a 2-wheel differential drive mobile robot
+  and execute autonomous geometric path navigation drills.
 
   Description:
-  Implements fundamental kinematic motion primitives for a 2-wheel differential
-  drive mobile robot (Robocar). Demonstrates modular navigation routines:
-  Forward, Backward, Pivot Turns, Point/Spin Turns, and Soft Stops.
-  Executes an autonomous geometric square navigation drill.
+  Implements fundamental kinematic routines for mobile robotics: Forward, Backward,
+  Pivot Turn Left/Right (wide curve), and Point Spin Left/Right (zero turning radius).
+  Executes an autonomous 4-sided square navigation drill followed by an S-curve demonstration.
 
-  Differential Drive Kinematics:
-  - Forward:     Left Motor (CW),  Right Motor (CW)
-  - Backward:    Left Motor (CCW), Right Motor (CCW)
-  - Pivot Left:  Left Motor (OFF), Right Motor (CW)
-  - Pivot Right: Left Motor (CW),  Right Motor (OFF)
-  - Spin Left:   Left Motor (CCW), Right Motor (CW)  (Zero turning radius)
-  - Spin Right:  Left Motor (CW),  Right Motor (CCW) (Zero turning radius)
+  Hardware:
+  - Arduino UNO R3 (or compatible AVR development board)
+  - L293D / L298N Dual H-Bridge Motor Driver
+  - 2x DC Yellow BO Gear Motors
+  - 2WD Robotic Chassis with caster wheel
+  - External Motor Power Supply (6V - 12V Battery Pack)
 
-  Hardware Connections:
+  Pin Configuration:
   -------------------------------------------------------------
-  L293D / Driver Pin    Arduino Pin      Description
+  Driver / Component Pin   Arduino UNO Pin   Function
   -------------------------------------------------------------
-  ENA                   Pin 5 (PWM)      Left Motor Speed
-  IN1                   Pin 2            Left Motor Input 1
-  IN2                   Pin 3            Left Motor Input 2
-  IN3                   Pin 4            Right Motor Input 1
-  IN4                   Pin 7            Right Motor Input 2
-  ENB                   Pin 6 (PWM)      Right Motor Speed
-  VCC2 (VM)             +6V to +12V      Battery Pack Positive (+)
-  GND                   GND              Common Ground
+  ENA                      Pin 5 (PWM)       Left Motor Speed Enable
+  IN1                      Pin 2             Left Motor Direction Input 1
+  IN2                      Pin 3             Left Motor Direction Input 2
+  IN3                      Pin 4             Right Motor Direction Input 1
+  IN4                      Pin 7             Right Motor Direction Input 2
+  ENB                      Pin 6 (PWM)       Right Motor Speed Enable
+  VCC2 / VM                Battery (+)       Motor Power (+6V to +12V)
+  GND                      GND & Batt (-)    Common Ground Busbar
   -------------------------------------------------------------
+
+  Working Principle:
+  Differential drive kinematics relies on the relative velocities of the left and right wheels:
+  - Straight Forward:     Left = +v, Right = +v (Equal forward speeds)
+  - Straight Reverse:     Left = -v, Right = -v (Equal reverse speeds)
+  - Pivot Turn Left:      Left = 0,  Right = +v (Left stationary, Right drives forward)
+  - Pivot Turn Right:     Left = +v, Right = 0  (Left drives forward, Right stationary)
+  - Point Spin Left:      Left = -v, Right = +v (Counter-rotating, zero radius turn)
+  - Point Spin Right:     Left = +v, Right = -v (Counter-rotating, zero radius turn)
+
+  Expected Behavior:
+  1. Section 1 (Square Drill): Robot moves forward for 2.0s, pauses, executes a 90-degree point turn
+     right (600ms), and repeats this 4 times to trace an enclosed rectangular path.
+  2. Section 2 (Pivot & Reverse): Robot demonstrates wide pivot curves left and right, then reverses 2.0s.
+  3. Telemetry is streamed to the Serial Monitor at 9600 baud.
+
+  Notes:
+  - 90-degree turn timing depends on wheel diameter, axle track width, and floor friction.
+    The `TURN_TIME_MS` constant can be calibrated to achieve exact 90-degree corners.
+
+  Author/Organization:
+  National Institute of Electronics & Information Technology
+  NIELIT Ropar
+
+  =========================================================
 */
 
-// Left Motor Pins
+// =====================================================
+// PIN DEFINITIONS
+// =====================================================
+
+// Left Motor Driver Pins
 #define ENA 5
 #define IN1 2
 #define IN2 3
 
-// Right Motor Pins
+// Right Motor Driver Pins
 #define ENB 6
 #define IN3 4
 #define IN4 7
 
-// Default cruising and turning speed values (0 - 255)
-const int CRUISE_SPEED = 200;
-const int TURN_SPEED   = 180;
+// =====================================================
+// SPEED & TIMING CONSTANTS
+// =====================================================
+
+const int CRUISE_SPEED = 200; // Base forward/reverse speed (PWM 0-255)
+const int TURN_SPEED   = 180; // Turn/spin speed (PWM 0-255)
+
+const int STRAIGHT_TIME_MS = 2000;
+const int TURN_TIME_MS     = 600;  // Calibrate for exact 90-degree corner
+const int PIVOT_TIME_MS    = 1500;
+const int SETTLE_TIME_MS   = 400;
+
+// =====================================================
+// FUNCTION PROTOTYPES
+// =====================================================
+
+void moveForward(int speed, int durationMs);
+void moveBackward(int speed, int durationMs);
+void turnLeft(int speed, int durationMs);
+void turnRight(int speed, int durationMs);
+void spinLeft(int speed, int durationMs);
+void spinRight(int speed, int durationMs);
+void stopRobot(int durationMs);
+
+// =====================================================
+// SETUP
+// =====================================================
 
 void setup() {
   Serial.begin(9600);
@@ -55,56 +112,64 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
+  // Safe initialization
   stopRobot(500);
 
   Serial.println(F("=================================================="));
-  Serial.println(F(" Practical 3.4: Robocar Kinematic Maneuvers      "));
+  Serial.println(F(" NIELIT Practical 3.4: Robocar Kinematic Maneuvers"));
   Serial.println(F("=================================================="));
-  Serial.println(F("Starting autonomous navigation drill in 3s...\n"));
+  Serial.println(F("[INFO] System initialized"));
+  Serial.println(F("[INFO] Starting autonomous navigation drill in 3s...\n"));
   delay(3000);
 }
 
+// =====================================================
+// MAIN LOOP
+// =====================================================
+
 void loop() {
-  Serial.println(F("--- 1. Starting Autonomous Square Navigation Drill ---"));
+  Serial.println(F("--- 1. Autonomous Square Navigation Drill ---"));
 
   // Traverse a 4-sided square trajectory
   for (int side = 1; side <= 4; side++) {
-    Serial.print(F("Traversing Side "));
+    Serial.print(F("[NAV] Traversing Side "));
     Serial.print(side);
-    Serial.println(F(" (Straight 2000ms)..."));
+    Serial.println(F(" (Straight Forward 2000ms)..."));
     
     // 1. Move straight
-    moveForward(CRUISE_SPEED, 2000);
-    stopRobot(400);
+    moveForward(CRUISE_SPEED, STRAIGHT_TIME_MS);
+    stopRobot(SETTLE_TIME_MS);
 
-    // 2. 90-degree right turn (Tune duration based on chassis track width and floor friction)
-    Serial.println(F("Executing 90-degree Point Turn Right (600ms)..."));
-    spinRight(TURN_SPEED, 600);
-    stopRobot(400);
+    // 2. 90-degree right point turn
+    Serial.println(F("[NAV] Executing 90-degree Point Turn Right (600ms)..."));
+    spinRight(TURN_SPEED, TURN_TIME_MS);
+    stopRobot(SETTLE_TIME_MS);
   }
 
-  Serial.println(F("Square path completed!\n"));
+  Serial.println(F("[NAV] Square trajectory completed successfully!\n"));
   delay(2000);
 
-  // Additional Kinematic Demonstration: Wide Curve / Pivot Maneuvers
+  // ---------------------------------------------------
+  // Section 2: Wide Pivot Curve & Reversal Demonstration
+  // ---------------------------------------------------
   Serial.println(F("--- 2. Demonstrating Wide Pivot Turns & Reversal ---"));
-  
-  Serial.println(F("Pivot Turn Left (Right wheel drives forward 1500ms)..."));
-  turnLeft(CRUISE_SPEED, 1500);
-  stopRobot(400);
 
-  Serial.println(F("Pivot Turn Right (Left wheel drives forward 1500ms)..."));
-  turnRight(CRUISE_SPEED, 1500);
-  stopRobot(400);
+  Serial.println(F("[NAV] Pivot Turn Left (Right wheel forward, Left wheel stopped 1500ms)..."));
+  turnLeft(CRUISE_SPEED, PIVOT_TIME_MS);
+  stopRobot(SETTLE_TIME_MS);
 
-  Serial.println(F("Reversing back to origin position (2000ms)..."));
-  moveBackward(CRUISE_SPEED, 2000);
+  Serial.println(F("[NAV] Pivot Turn Right (Left wheel forward, Right wheel stopped 1500ms)..."));
+  turnRight(CRUISE_SPEED, PIVOT_TIME_MS);
+  stopRobot(SETTLE_TIME_MS);
+
+  Serial.println(F("[NAV] Reversing back to starting position (2000ms)..."));
+  moveBackward(CRUISE_SPEED, STRAIGHT_TIME_MS);
   stopRobot(3000);
 }
 
-// -------------------------------------------------------------
-// Kinematic Movement Primitives
-// -------------------------------------------------------------
+// =====================================================
+// KINEMATIC MOVEMENT PRIMITIVES
+// =====================================================
 
 void moveForward(int speed, int durationMs) {
   digitalWrite(IN1, HIGH);
@@ -149,7 +214,7 @@ void turnRight(int speed, int durationMs) {
 }
 
 void spinLeft(int speed, int durationMs) {
-  // Zero-radius point spin: Left reverse, Right forward
+  // Zero-radius point spin: Left reverses, Right drives forward
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, HIGH);
@@ -160,7 +225,7 @@ void spinLeft(int speed, int durationMs) {
 }
 
 void spinRight(int speed, int durationMs) {
-  // Zero-radius point spin: Left forward, Right reverse
+  // Zero-radius point spin: Left drives forward, Right reverses
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);

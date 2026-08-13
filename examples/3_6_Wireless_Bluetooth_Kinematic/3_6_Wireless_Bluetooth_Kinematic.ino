@@ -1,52 +1,94 @@
 /*
+  =========================================================
+  NIELIT Robotics Practicals
   Practical 3.6: Wireless Kinematic – Bluetooth Interfacing
-  Course: NIELIT Robotics Practicals
+  =========================================================
+
+  Objective:
+  Interface an HC-05/HC-06 Bluetooth module via SoftwareSerial, implement a robust wireless teleoperation
+  protocol with multi-speed scaling, and integrate a fail-safe communication watchdog timer.
 
   Description:
-  Enables wireless teleoperation of the 2-wheel differential drive robot
-  via Bluetooth (HC-05 or HC-06 module) using SoftwareSerial.
-  Implements robust character protocol parsing (handling both uppercase and
-  lowercase commands), speed preset scaling, and a fail-safe safety watchdog timer
-  to automatically stop the vehicle upon connection interruption.
+  Enables wireless remote control of a 2-wheel differential drive robot from a smartphone or PC Bluetooth terminal.
+  Implements case-insensitive character parsing for directional movements (Forward, Backward, Point Turns, Differential Curves),
+  discrete speed presets ('0' - '9'), and an autonomous safety watchdog that halts the vehicle if the connection drops.
 
-  Standard Bluetooth Robot Protocol:
-  - 'F' / 'f': Forward
-  - 'B' / 'b': Backward
-  - 'L' / 'l': Spin Left (Point turn)
-  - 'R' / 'r': Spin Right (Point turn)
-  - 'G' / 'g': Forward Left Curve
-  - 'I' / 'i': Forward Right Curve
-  - 'H' / 'h': Backward Left Curve
-  - 'J' / 'j': Backward Right Curve
-  - 'S' / 's' / 'D' / 'd': STOP ALL MOTORS
-  - '0'..'9' / 'q': Set Speed Presets (0 = Min, 9 / 'q' = Max 255)
+  Hardware:
+  - Arduino UNO R3 (or compatible AVR development board)
+  - HC-05 or HC-06 Bluetooth Serial Module
+  - L293D / L298N Dual H-Bridge Motor Driver
+  - 2x DC Yellow BO Gear Motors
+  - 2WD Robotic Chassis with caster wheel
+  - External Motor Power Supply (6V - 12V Battery Pack)
+  - 1k Ohm & 2k Ohm Resistors (for 3.3V RX level shifter)
 
-  Hardware Connections:
+  Pin Configuration:
   -------------------------------------------------------------
-  HC-05 / HC-06 Pin     Arduino Pin      Notes
+  Module / Driver Pin      Arduino UNO Pin   Notes
   -------------------------------------------------------------
-  VCC                   5V               5V Power
-  GND                   GND              Common Ground
-  TXD                   Pin 12           Arduino RX (SoftwareSerial)
-  RXD                   Pin 13           Arduino TX (via 1k/2k divider)
+  HC-05 VCC                5V                5V Regulated Supply
+  HC-05 GND                GND               Common Ground
+  HC-05 TXD                Pin 12 (RX)       SoftwareSerial Receive from Bluetooth
+  HC-05 RXD                Pin 13 (TX)       SoftwareSerial Transmit (via 3.3V divider)
+  ENA                      Pin 5 (PWM)       Left Motor Speed Enable
+  IN1                      Pin 2             Left Motor Direction Input 1
+  IN2                      Pin 3             Left Motor Direction Input 2
+  IN3                      Pin 4             Right Motor Direction Input 1
+  IN4                      Pin 7             Right Motor Direction Input 2
+  ENB                      Pin 6 (PWM)       Right Motor Speed Enable
+  VCC2 / VM                Battery (+)       Motor Power (+6V to +12V)
+  GND                      GND & Batt (-)    Common Ground Busbar
   -------------------------------------------------------------
-  Motor Driver Pin      Arduino Pin
-  -------------------------------------------------------------
-  ENA                   Pin 5 (PWM)
-  IN1                   Pin 2
-  IN2                   Pin 3
-  IN3                   Pin 4
-  IN4                   Pin 7
-  ENB                   Pin 6 (PWM)
-  -------------------------------------------------------------
+
+  Working Principle:
+  The Bluetooth module acts as a wireless UART bridge at 9600 baud. As the smartphone controller
+  transmits single-byte ASCII command characters, the Arduino reads them via `SoftwareSerial`,
+  decodes the instruction, sets the motor states, and resets the watchdog countdown timer.
+  If no packet arrives within 1000ms while moving, the watchdog automatically stops all motors.
+
+  Bluetooth Command Protocol:
+  +----------------------+----------------------------------------------------+
+  | Command Characters   | Action Executed                                    |
+  +----------------------+----------------------------------------------------+
+  | 'F' / 'f'            | Move Forward                                       |
+  | 'B' / 'b'            | Move Backward                                      |
+  | 'L' / 'l'            | Point Spin Left (Zero radius)                      |
+  | 'R' / 'r'            | Point Spin Right (Zero radius)                     |
+  | 'G' / 'g'            | Forward-Left Differential Curve                    |
+  | 'I' / 'i'            | Forward-Right Differential Curve                   |
+  | 'H' / 'h'            | Backward-Left Differential Curve                   |
+  | 'J' / 'j'            | Backward-Right Differential Curve                  |
+  | 'S' / 's' / 'D' / 'd'| Full Stop (All motors disabled)                    |
+  | '0' .. '9'           | Speed Presets (0 = 70 PWM ... 9 = 255 PWM)         |
+  | 'Q' / 'q'            | Maximum Speed (255 PWM)                            |
+  +----------------------+----------------------------------------------------+
+
+  Expected Behavior:
+  1. Pairing: HC-05 LED blinks rapidly until paired with smartphone (default PIN: 1234 or 0000).
+  2. Teleoperation: Robot responds immediately to incoming touch / D-pad commands.
+  3. Safety Timeout: If out of range or disconnected, the robot halts within 1.0 second.
+  4. Diagnostics are displayed on the Arduino Serial Monitor at 9600 baud.
+
+  Notes:
+  - HC-05 RXD pin is 3.3V logic tolerant. A simple 1k / 2k resistor divider from Arduino D13 (TX)
+    protects the Bluetooth module from 5V logic overvoltage.
+
+  Author/Organization:
+  National Institute of Electronics & Information Technology
+  NIELIT Ropar
+
+  =========================================================
 */
 
 #include <SoftwareSerial.h>
 
+// =====================================================
+// PIN DEFINITIONS
+// =====================================================
+
 // Bluetooth SoftwareSerial interface
-// Arduino Pin 12 (RX) <- HC-05 TXD
-// Arduino Pin 13 (TX) -> HC-05 RXD (Use 1k/2k resistor voltage divider to 3.3V)
-SoftwareSerial BTSerial(12, 13);
+#define BT_RX_PIN 12   // Arduino RX <- HC-05 TXD
+#define BT_TX_PIN 13   // Arduino TX -> HC-05 RXD (via 3.3V divider)
 
 // Left Motor Driver Pins
 #define ENA 5
@@ -58,17 +100,40 @@ SoftwareSerial BTSerial(12, 13);
 #define IN3 4
 #define IN4 7
 
-// Current operating speed (0 to 255)
-int currentSpeed = 200;
+// =====================================================
+// OBJECT INSTANTIATION & STATE VARIABLES
+// =====================================================
 
-// Watchdog safety timer (Auto-stop if no command received within timeout)
+SoftwareSerial BTSerial(BT_RX_PIN, BT_TX_PIN);
+
+int currentSpeed = 200; // Default cruise PWM speed (0 - 255)
+
+// Watchdog safety timer
 unsigned long lastCommandTime = 0;
 const unsigned long WATCHDOG_TIMEOUT_MS = 1000;
 bool isMoving = false;
 
+// =====================================================
+// FUNCTION PROTOTYPES
+// =====================================================
+
+void handleCommand(char rawCmd, const char* source);
+void setSpeedPreset(int spd);
+void moveForward(int speed);
+void moveBackward(int speed);
+void spinLeft(int speed);
+void spinRight(int speed);
+void curveDrive(int leftSpeed, int rightSpeed);
+void curveReverse(int leftSpeed, int rightSpeed);
+void stopRobot();
+
+// =====================================================
+// SETUP
+// =====================================================
+
 void setup() {
   Serial.begin(9600);
-  BTSerial.begin(9600); // Standard default baud rate for HC-05/06
+  BTSerial.begin(9600); // Standard factory baud rate for HC-05/06
 
   pinMode(ENA, OUTPUT);
   pinMode(IN1, OUTPUT);
@@ -77,17 +142,24 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
+  // Safe initialization
   stopRobot();
 
   Serial.println(F("=================================================="));
-  Serial.println(F(" Practical 3.6: Wireless Bluetooth Robocar       "));
+  Serial.println(F(" NIELIT Practical 3.6: Wireless Bluetooth Robocar "));
   Serial.println(F("=================================================="));
-  Serial.println(F("Bluetooth ready! Pair with smartphone controller."));
-  Serial.println(F("Commands: F=Forward, B=Back, L=Left, R=Right, S=Stop, 0-9=Speed\n"));
+  Serial.println(F("[INFO] System initialized"));
+  Serial.println(F("[INFO] Bluetooth interface ready on Pins 12(RX) and 13(TX)"));
+  Serial.println(F("[INFO] Commands: F=Forward, B=Back, L=Left, R=Right, S=Stop, 0-9=Speed"));
+  Serial.println(F("[INFO] Watchdog fail-safe timeout: 1000ms\n"));
 
   BTSerial.println(F("NIELIT Bluetooth Robocar Ready!"));
   lastCommandTime = millis();
 }
+
+// =====================================================
+// MAIN LOOP
+// =====================================================
 
 void loop() {
   // Read incoming command from Bluetooth module
@@ -104,26 +176,30 @@ void loop() {
 
   // Watchdog Safety Check: Stop robot if communication drops while in motion
   if (isMoving && (millis() - lastCommandTime > WATCHDOG_TIMEOUT_MS)) {
-    Serial.println(F("[Watchdog] Signal timeout reached. Auto-Stopping."));
+    Serial.println(F("[WATCHDOG] Signal timeout reached. Auto-Stopping."));
     stopRobot();
   }
 }
 
+// =====================================================
+// PROTOCOL PARSER
+// =====================================================
+
 void handleCommand(char rawCmd, const char* source) {
-  // Ignore newline or carriage return whitespace
+  // Ignore whitespace, carriage return, and newline characters
   if (rawCmd == '\r' || rawCmd == '\n' || rawCmd == ' ') return;
 
   lastCommandTime = millis();
 
   Serial.print(F("["));
   Serial.print(source);
-  Serial.print(F("] Received: '"));
+  Serial.print(F("] Command: '"));
   Serial.print(rawCmd);
   Serial.println(F("'"));
 
   // Check for numeric speed preset commands '0' through '9'
   if (rawCmd >= '0' && rawCmd <= '9') {
-    int speedMap[] = {70, 90, 110, 130, 150, 170, 190, 210, 235, 255};
+    const int speedMap[] = {70, 90, 110, 130, 150, 170, 190, 210, 235, 255};
     setSpeedPreset(speedMap[rawCmd - '0']);
     return;
   }
@@ -147,11 +223,11 @@ void handleCommand(char rawCmd, const char* source) {
       spinRight(currentSpeed);
       break;
 
-    case 'G': // Forward Left Curve (Differential drive)
+    case 'G': // Forward Left Curve (Differential)
       curveDrive(currentSpeed / 3, currentSpeed);
       break;
 
-    case 'I': // Forward Right Curve (Differential drive)
+    case 'I': // Forward Right Curve (Differential)
       curveDrive(currentSpeed, currentSpeed / 3);
       break;
 
@@ -168,12 +244,12 @@ void handleCommand(char rawCmd, const char* source) {
       stopRobot();
       break;
 
-    case 'Q': // Max Speed
+    case 'Q': // Maximum Velocity
       setSpeedPreset(255);
       break;
 
     default:
-      Serial.print(F("Unrecognized command: "));
+      Serial.print(F("[WARN] Unrecognized command: "));
       Serial.println(cmd);
       break;
   }
@@ -181,15 +257,15 @@ void handleCommand(char rawCmd, const char* source) {
 
 void setSpeedPreset(int spd) {
   currentSpeed = constrain(spd, 0, 255);
-  Serial.print(F("Speed updated to: "));
+  Serial.print(F("[INFO] Speed updated to: "));
   Serial.println(currentSpeed);
   BTSerial.print(F("Speed: "));
   BTSerial.println(currentSpeed);
 }
 
-// -------------------------------------------------------------
-// Motion Primitives
-// -------------------------------------------------------------
+// =====================================================
+// MOTION PRIMITIVES
+// =====================================================
 
 void moveForward(int speed) {
   isMoving = true;

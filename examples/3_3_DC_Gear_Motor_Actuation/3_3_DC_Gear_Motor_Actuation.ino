@@ -1,32 +1,71 @@
 /*
+  =========================================================
+  NIELIT Robotics Practicals
   Practical 3.3: Direct Current Actuation — Interfacing DC Gear Motors
-  Course: NIELIT Robotics Practicals
+  =========================================================
+
+  Objective:
+  Interface and independently actuate dual direct current (DC) gear motors through an H-bridge driver,
+  evaluating directional thrust, torque multiplication, and differential rotation.
 
   Description:
-  Controls dual DC gear motors (BO Motors) using the L293D motor driver.
-  Demonstrates independent bi-directional actuation for Left and Right channels,
-  verifying forward thrust, reverse pull, and axial spinning motions.
+  Demonstrates bi-directional control of left and right DC gear motors (BO motors) mounted on a mobile chassis.
+  Executes six distinct actuation maneuvers: Dual Forward Thrust, Dual Reverse Pull, Single Left Drive,
+  Single Right Drive, Axial Spin Left, and Axial Spin Right.
 
-  Tinkercad Simulation:
-  https://www.tinkercad.com/things/itgeuX95VvZ-two-dc-motor-l293d
+  Hardware:
+  - Arduino UNO R3 (or compatible AVR development board)
+  - L293D / L298N Dual H-Bridge Motor Driver
+  - 2x DC Yellow BO Gear Motors (3V - 6V, 1:48 gear ratio)
+  - 2WD Robotic Platform
+  - External Motor Power Supply (6V - 12V Battery Pack)
 
-  Hardware Connections:
+  Pin Configuration:
   -------------------------------------------------------------
-  L293D Pin             Arduino Pin      Connected To
+  Driver / Component Pin   Arduino UNO Pin   Function
   -------------------------------------------------------------
-  ENA (Pin 1)           Pin 5 (PWM)      Left Motor Speed
-  IN1 (Pin 2)           Pin 2            Left Motor Dir A
-  IN2 (Pin 7)           Pin 3            Left Motor Dir B
-  IN3 (Pin 10)          Pin 4            Right Motor Dir A
-  IN4 (Pin 15)          Pin 7            Right Motor Dir B
-  ENB (Pin 9)           Pin 6 (PWM)      Right Motor Speed
-  OUT1, OUT2            Terminals        Left DC Gear Motor
-  OUT3, OUT4            Terminals        Right DC Gear Motor
-  VCC1                  5V               Arduino 5V
-  VCC2 (VM)             +6V to +12V      Motor Power Battery (+)
-  GND                   GND              Common Ground
+  ENA                      Pin 5 (PWM)       Left Motor Speed Enable
+  IN1                      Pin 2             Left Motor Direction Input 1
+  IN2                      Pin 3             Left Motor Direction Input 2
+  IN3                      Pin 4             Right Motor Direction Input 1
+  IN4                      Pin 7             Right Motor Direction Input 2
+  ENB                      Pin 6 (PWM)       Right Motor Speed Enable
+  OUT1, OUT2               Terminals         Left DC Gear Motor
+  OUT3, OUT4               Terminals         Right DC Gear Motor
+  VCC1                     5V                Arduino 5V (Logic Supply)
+  VCC2 / VM                Battery (+)       Motor Power (+6V to +12V)
+  GND                      GND & Batt (-)    Common Ground Busbar
   -------------------------------------------------------------
+
+  Working Principle:
+  BO gear motors combine a high-speed DC armature with a reduction gearbox (typically 1:48).
+  This gear reduction trades rotational speed for output torque, enabling the wheels to overcome
+  static friction and drive the vehicle chassis. Independent dual-channel H-bridges allow the
+  microcontroller to spin each motor in either direction or vary its speed via PWM.
+
+  Expected Behavior:
+  1. Maneuver 1: Both motors drive Forward at full thrust (2.5s).
+  2. Maneuver 2: Both motors drive Reverse at full pull (2.5s).
+  3. Maneuver 3: Left motor only drives Forward (2.0s), pivoting the chassis to the right.
+  4. Maneuver 4: Right motor only drives Forward (2.0s), pivoting the chassis to the left.
+  5. Maneuver 5: Left motor reverses while Right motor drives forward (Axial Spin Left, 2.0s).
+  6. Maneuver 6: Left motor drives forward while Right motor reverses (Axial Spin Right, 2.0s).
+  7. Clear telemetry messages are displayed on the Serial Monitor at 9600 baud.
+
+  Notes:
+  - A brief 800ms soft pause is introduced between maneuvers to prevent inductive current surges
+    and mechanical stress on the plastic gear teeth.
+
+  Author/Organization:
+  National Institute of Electronics & Information Technology
+  NIELIT Ropar
+
+  =========================================================
 */
+
+// =====================================================
+// PIN DEFINITIONS
+// =====================================================
 
 // Left Motor Driver Pins
 #define ENA 5
@@ -38,10 +77,34 @@
 #define IN3 4
 #define IN4 7
 
+// =====================================================
+// SPEED & TIMING CONSTANTS
+// =====================================================
+
+const int DRIVE_SPEED = 240;
+const int PIVOT_SPEED = 220;
+const int SPIN_SPEED  = 200;
+
+const int DRIVE_TIME_MS = 2500;
+const int PIVOT_TIME_MS = 2000;
+const int SPIN_TIME_MS  = 2000;
+const int PAUSE_TIME_MS = 800;
+
+// =====================================================
+// FUNCTION PROTOTYPES
+// =====================================================
+
+void setMotorLeft(bool forward, int speed);
+void setMotorRight(bool forward, int speed);
+void stopMotors();
+
+// =====================================================
+// SETUP
+// =====================================================
+
 void setup() {
   Serial.begin(9600);
 
-  // Setup motor pins as outputs
   pinMode(ENA, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
@@ -49,70 +112,76 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
+  // Safe initialization
   stopMotors();
 
   Serial.println(F("=================================================="));
-  Serial.println(F(" Practical 3.3: DC Gear Motor Actuation           "));
+  Serial.println(F(" NIELIT Practical 3.3: DC Gear Motor Actuation    "));
   Serial.println(F("=================================================="));
-  Serial.println(F("Commencing dual-channel motor actuation test sequence in 2s:\n"));
+  Serial.println(F("[INFO] System initialized"));
+  Serial.println(F("[INFO] Commencing dual-channel motor actuation test sequence in 2s...\n"));
   delay(2000);
 }
+
+// =====================================================
+// MAIN LOOP
+// =====================================================
 
 void loop() {
   // 1. Both Motors Forward
-  Serial.println(F("1. Both Motors Driving FORWARD (Thrust)"));
-  setMotorLeft(true, 240);
-  setMotorRight(true, 240);
-  delay(2500);
+  Serial.println(F("[ACTION 1] Both Motors Driving FORWARD (Forward Thrust)"));
+  setMotorLeft(true, DRIVE_SPEED);
+  setMotorRight(true, DRIVE_SPEED);
+  delay(DRIVE_TIME_MS);
   stopMotors();
-  delay(800);
+  delay(PAUSE_TIME_MS);
 
   // 2. Both Motors Reverse
-  Serial.println(F("2. Both Motors Driving REVERSE (Pull)"));
-  setMotorLeft(false, 240);
-  setMotorRight(false, 240);
-  delay(2500);
+  Serial.println(F("[ACTION 2] Both Motors Driving REVERSE (Reverse Pull)"));
+  setMotorLeft(false, DRIVE_SPEED);
+  setMotorRight(false, DRIVE_SPEED);
+  delay(DRIVE_TIME_MS);
   stopMotors();
-  delay(800);
+  delay(PAUSE_TIME_MS);
 
   // 3. Left Motor Only (Forward)
-  Serial.println(F("3. Left Motor ONLY (Forward) -> Vehicle pivots Right"));
-  setMotorLeft(true, 220);
+  Serial.println(F("[ACTION 3] Left Motor ONLY (Forward) -> Chassis pivots Right"));
+  setMotorLeft(true, PIVOT_SPEED);
   setMotorRight(false, 0);
-  delay(2000);
+  delay(PIVOT_TIME_MS);
   stopMotors();
-  delay(800);
+  delay(PAUSE_TIME_MS);
 
   // 4. Right Motor Only (Forward)
-  Serial.println(F("4. Right Motor ONLY (Forward) -> Vehicle pivots Left"));
+  Serial.println(F("[ACTION 4] Right Motor ONLY (Forward) -> Chassis pivots Left"));
   setMotorLeft(false, 0);
-  setMotorRight(true, 220);
-  delay(2000);
+  setMotorRight(true, PIVOT_SPEED);
+  delay(PIVOT_TIME_MS);
   stopMotors();
-  delay(800);
+  delay(PAUSE_TIME_MS);
 
-  // 5. Axial Spin Left (Left reverse, Right forward)
-  Serial.println(F("5. Axial SPIN LEFT (Zero turning radius)"));
-  setMotorLeft(false, 200);
-  setMotorRight(true, 200);
-  delay(2000);
+  // 5. Axial Spin Left
+  Serial.println(F("[ACTION 5] Axial SPIN LEFT (Counter-rotating wheels, Zero radius)"));
+  setMotorLeft(false, SPIN_SPEED);
+  setMotorRight(true, SPIN_SPEED);
+  delay(SPIN_TIME_MS);
   stopMotors();
-  delay(800);
+  delay(PAUSE_TIME_MS);
 
-  // 6. Axial Spin Right (Left forward, Right reverse)
-  Serial.println(F("6. Axial SPIN RIGHT (Zero turning radius)"));
-  setMotorLeft(true, 200);
-  setMotorRight(false, 200);
-  delay(2000);
+  // 6. Axial Spin Right
+  Serial.println(F("[ACTION 6] Axial SPIN RIGHT (Counter-rotating wheels, Zero radius)"));
+  setMotorLeft(true, SPIN_SPEED);
+  setMotorRight(false, SPIN_SPEED);
+  delay(SPIN_TIME_MS);
   stopMotors();
-  
-  Serial.println(F("\n--- Sequence Completed. Pausing 4 seconds ---\n"));
+
+  Serial.println(F("\n[INFO] Actuation test suite completed. Pausing 4 seconds...\n"));
   delay(4000);
 }
 
-// -------------------------------------------------------------
-// Actuation Helper Routines
-// -------------------------------------------------------------
+// =====================================================
+// MOTOR CONTROL PRIMITIVES
+// =====================================================
 
 void setMotorLeft(bool forward, int speed) {
   if (speed <= 0) {

@@ -1,39 +1,81 @@
 /*
+  =========================================================
+  NIELIT Robotics Practicals
   Practical 3.8: Autonomous Navigation Capstone II — Obstacle-Avoiding Vehicle
-  Course: NIELIT Robotics Practicals
+  =========================================================
+
+  Objective:
+  Implement an autonomous collision avoidance system using an HC-SR04 ultrasonic distance sensor,
+  multi-sample acoustic noise filtering, and a reactive evasive navigation state machine.
 
   Description:
-  Implements an intelligent autonomous obstacle-avoiding robotic vehicle
-  utilizing an HC-SR04 ultrasonic distance sensor with multi-sample filtering.
-  Continuously monitors forward clearance, detects impediments within a safety
-  threshold, and executes automated evasive maneuvers (Stop -> Reverse -> Spin Turn -> Resume)
-  with adaptive deadlock prevention.
+  Demonstrates autonomous obstacle detection and evasion on a mobile robot.
+  Measures time-of-flight acoustic echo duration to calculate forward spatial clearance in centimeters.
+  Executes automated navigation routines: Forward Cruise, Obstacle Avoidance (Stop -> Reverse -> Spin Turn),
+  and Critical Emergency Evasion with adaptive alternating turn directions to prevent corner deadlock.
 
-  Tinkercad Simulation:
-  https://www.tinkercad.com/things/1BEzwkis74q-interafacing-obstacle-using-ultrasonic-sensor
+  Hardware:
+  - Arduino UNO R3 (or compatible AVR development board)
+  - HC-SR04 Ultrasonic Distance Sensor Module
+  - L293D / L298N Dual H-Bridge Motor Driver
+  - 2x DC Yellow BO Gear Motors
+  - 2WD Robotic Chassis with caster wheel
+  - External Motor Power Supply (6V - 12V Battery Pack)
 
-  Distance Calculation Formula:
-  Distance (cm) = (Echo_Duration_us * 0.0343) / 2
+  Pin Configuration:
+  -------------------------------------------------------------
+  Module / Driver Pin      Arduino UNO Pin   Description
+  -------------------------------------------------------------
+  HC-SR04 VCC              5V                5V Regulated Supply
+  HC-SR04 GND              GND               Common Ground
+  HC-SR04 TRIG             Pin 9             Ultrasonic Trigger Pulse Output
+  HC-SR04 ECHO             Pin 10            Echo Return Pulse Input
+  ENA                      Pin 5 (PWM)       Left Motor Speed Enable
+  IN1                      Pin 2             Left Motor Direction Input 1
+  IN2                      Pin 3             Left Motor Direction Input 2
+  IN3                      Pin 4             Right Motor Direction Input 1
+  IN4                      Pin 7             Right Motor Direction Input 2
+  ENB                      Pin 6 (PWM)       Right Motor Speed Enable
+  VCC2 / VM                Battery (+)       Motor Power (+6V to +12V)
+  GND                      GND & Batt (-)    Common Ground Busbar
+  -------------------------------------------------------------
 
-  Hardware Connections:
-  -------------------------------------------------------------
-  HC-SR04 Pin           Arduino Pin      Description
-  -------------------------------------------------------------
-  VCC                   5V               5V Power Rail
-  GND                   GND              Common Ground
-  TRIG                  Pin 9            Trigger Pulse (Output)
-  ECHO                  Pin 10           Echo Time (Input)
-  -------------------------------------------------------------
-  Motor Driver Pin      Arduino Pin      Description
-  -------------------------------------------------------------
-  ENA                   Pin 5 (PWM)      Left Motor Speed
-  IN1                   Pin 2            Left Motor Dir A
-  IN2                   Pin 3            Left Motor Dir B
-  IN3                   Pin 4            Right Motor Dir A
-  IN4                   Pin 7            Right Motor Dir B
-  ENB                   Pin 6 (PWM)      Right Motor Speed
-  -------------------------------------------------------------
+  Working Principle:
+  The HC-SR04 sensor transmits a 40 kHz ultrasonic burst upon receiving a 10 microsecond HIGH pulse on `TRIG`.
+  The `ECHO` pin remains HIGH for the duration of the sound wave's round trip.
+  Distance is calculated via:
+    Distance (cm) = (Echo_Duration_us * 0.0343) / 2
+  Dual-sample filtering eliminates occasional single-ping acoustic reflection noise glitches.
+
+  Obstacle Avoidance Decision State Table:
+  +---------------------------+-----------------------+-----------------------------------------------+
+  | Distance Measurement      | Navigation State      | Robot Action Executed                         |
+  +---------------------------+-----------------------+-----------------------------------------------+
+  | Distance > 25 cm          | Path Clear            | Cruise Forward at normal speed                |
+  | 12 cm < Distance <= 25 cm | Impediment Detected   | Stop -> Reverse 350ms -> Spin Turn 450ms      |
+  | 0 < Distance <= 12 cm     | Critical Proximity    | Stop -> Reverse 600ms -> Wide Spin Turn 600ms |
+  +---------------------------+-----------------------+-----------------------------------------------+
+
+  Expected Behavior:
+  1. Startup: Safe initialization with a 3-second preparation delay.
+  2. Cruise: In open space, the vehicle drives steadily forward.
+  3. Avoidance: Upon approaching a wall or object within 25cm, the robot halts, backs up slightly,
+     executes an evasive spin turn, and resumes forward travel in a clear direction.
+
+  Notes:
+  - Alternating turn direction (`turnRightNext = !turnRightNext`) prevents the vehicle from getting
+    trapped in continuous corner loops.
+
+  Author/Organization:
+  National Institute of Electronics & Information Technology
+  NIELIT Ropar
+
+  =========================================================
 */
+
+// =====================================================
+// PIN DEFINITIONS
+// =====================================================
 
 // Ultrasonic Sensor Pins
 #define TRIG 9
@@ -49,25 +91,41 @@
 #define IN3 4
 #define IN4 7
 
-// Obstacle Avoidance Distance Thresholds (in centimeters)
-const int SAFE_DISTANCE_CM     = 25; // Stop & evasive turn threshold
-const int CRITICAL_DISTANCE_CM = 12; // Immediate emergency reverse threshold
+// =====================================================
+// DISTANCE THRESHOLDS & SPEED CONSTANTS
+// =====================================================
 
-// Cruising and Maneuver Speeds
-const int CRUISE_SPEED = 180;
-const int TURN_SPEED   = 190;
+const int SAFE_DISTANCE_CM     = 25; // Stop & turn threshold
+const int CRITICAL_DISTANCE_CM = 12; // Emergency reverse threshold
 
-// Alternate evasion turn direction to prevent corner deadlock
+const int CRUISE_SPEED = 180; // PWM forward cruising speed (0-255)
+const int TURN_SPEED   = 190; // PWM evasive turn speed (0-255)
+
+// Alternating turn direction flag for deadlock prevention
 bool turnRightNext = true;
+
+// =====================================================
+// FUNCTION PROTOTYPES
+// =====================================================
+
+long readSinglePingCM();
+long readFilteredDistanceCM();
+void moveForward(int speed);
+void moveBackward(int speed, int durationMs);
+void spinRight(int speed, int durationMs);
+void spinLeft(int speed, int durationMs);
+void stopRobot(int durationMs);
+
+// =====================================================
+// SETUP
+// =====================================================
 
 void setup() {
   Serial.begin(9600);
 
-  // Setup Ultrasonic Sensor Pins
   pinMode(TRIG, OUTPUT);
   pinMode(ECHO, INPUT);
 
-  // Setup Motor Pins as Outputs
   pinMode(ENA, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
@@ -75,63 +133,67 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
+  // Safe initialization
   stopRobot(500);
 
   Serial.println(F("=================================================="));
-  Serial.println(F(" Practical 3.8: Obstacle Avoiding Vehicle        "));
+  Serial.println(F(" NIELIT Practical 3.8: Obstacle Avoiding Vehicle  "));
   Serial.println(F("=================================================="));
-  Serial.print(F("Safety Threshold: "));
+  Serial.println(F("[INFO] System initialized"));
+  Serial.print(F("[INFO] Safety Threshold: "));
   Serial.print(SAFE_DISTANCE_CM);
   Serial.println(F(" cm"));
-  Serial.println(F("Starting autonomous navigation in 3 seconds...\n"));
+  Serial.println(F("[INFO] Starting autonomous navigation in 3s...\n"));
   delay(3000);
 }
 
+// =====================================================
+// MAIN LOOP
+// =====================================================
+
 void loop() {
-  // 1. Measure Filtered Front Distance (Averaged 3 samples)
+  // 1. Measure Filtered Distance (Averaged 2 pings)
   long distance = readFilteredDistanceCM();
 
-  Serial.print(F("Distance: "));
+  Serial.print(F("[SENSOR] Distance: "));
   Serial.print(distance);
   Serial.println(F(" cm"));
 
-  // 2. Evaluate Navigation State Machine
+  // 2. Navigation State Machine
   if (distance > SAFE_DISTANCE_CM) {
-    // Condition 1: Path is clear -> Cruise Forward
+    // Condition 1: Path unobstructed -> Cruise Forward
     moveForward(CRUISE_SPEED);
   }
   else if (distance <= CRITICAL_DISTANCE_CM && distance > 0) {
-    // Condition 2: Critical Proximity -> Emergency Stop & Extended Reverse
-    Serial.println(F("[EMERGENCY] Critical proximity! Reversing & wide spin..."));
+    // Condition 2: Critical proximity -> Emergency stop & extended reverse
+    Serial.println(F("[EMERGENCY] Critical proximity! Reversing and executing wide evasion..."));
     stopRobot(200);
     moveBackward(CRUISE_SPEED, 600);
     stopRobot(200);
-    
-    // Execute wide evasive spin turn
+
     if (turnRightNext) {
       spinRight(TURN_SPEED, 600);
     } else {
       spinLeft(TURN_SPEED, 600);
     }
-    turnRightNext = !turnRightNext; // Alternate next turn
+    turnRightNext = !turnRightNext; // Alternate turn direction to prevent corner deadlock
     stopRobot(300);
   }
   else if (distance <= SAFE_DISTANCE_CM && distance > 0) {
-    // Condition 3: Standard Obstacle Detected -> Stop, Reverse Clearance, Turn
+    // Condition 3: Normal obstacle detected -> Stop, brief reverse, spin turn
     Serial.println(F("[OBSTACLE] Path obstructed. Executing evasive turn..."));
     stopRobot(250);
-    
+
     // Brief reverse for bumper clearance
     moveBackward(CRUISE_SPEED, 350);
     stopRobot(150);
 
-    // Evasive turn to find clear path
     if (turnRightNext) {
       spinRight(TURN_SPEED, 450);
     } else {
       spinLeft(TURN_SPEED, 450);
     }
-    turnRightNext = !turnRightNext; // Alternate next turn
+    turnRightNext = !turnRightNext; // Alternate turn direction
     stopRobot(250);
   }
 
@@ -139,7 +201,7 @@ void loop() {
 }
 
 // -------------------------------------------------------------
-// Filtered Ultrasonic Distance Reading
+// FILTERED ULTRASONIC DISTANCE SENSOR HELPERS
 // -------------------------------------------------------------
 
 long readSinglePingCM() {
@@ -149,7 +211,7 @@ long readSinglePingCM() {
   delayMicroseconds(10);
   digitalWrite(TRIG, LOW);
 
-  // Measure echo pulse time (timeout at 25000us / ~4.2m)
+  // Measure echo pulse time (timeout at 25000us / ~4.2 meters)
   long duration = pulseIn(ECHO, HIGH, 25000);
 
   if (duration == 0) {
@@ -160,12 +222,11 @@ long readSinglePingCM() {
   return distance;
 }
 
-// Averages multiple pings to filter out random acoustic glitches
 long readFilteredDistanceCM() {
   long d1 = readSinglePingCM();
   delayMicroseconds(500);
   long d2 = readSinglePingCM();
-  
+
   if (d1 == 999 && d2 == 999) return 999;
   if (d1 == 999) return d2;
   if (d2 == 999) return d1;
@@ -173,9 +234,9 @@ long readFilteredDistanceCM() {
   return (d1 + d2) / 2;
 }
 
-// -------------------------------------------------------------
-// Motor Kinematic Primitives
-// -------------------------------------------------------------
+// =====================================================
+// MOTOR KINEMATIC PRIMITIVES
+// =====================================================
 
 void moveForward(int speed) {
   digitalWrite(IN1, HIGH);
