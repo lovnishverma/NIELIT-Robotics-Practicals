@@ -8,10 +8,7 @@
 
 NIELIT	KEYWORD1
 Robotics	KEYWORD1
-MotorDriver	KEYWORD1
-DifferentialDrive	KEYWORD1
-RoboCar	KEYWORD1
-MotorDirection	KEYWORD1
+Direction	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -26,10 +23,27 @@ turnLeft	KEYWORD2
 turnRight	KEYWORD2
 spinLeft	KEYWORD2
 spinRight	KEYWORD2
+curveDrive	KEYWORD2
+curveReverse	KEYWORD2
 stopRobot	KEYWORD2
-setSpeed	KEYWORD2
-setMotorSpeed	KEYWORD2
-setMotorState	KEYWORD2
+stopMotors	KEYWORD2
+stopAllMotors	KEYWORD2
+stopCoast	KEYWORD2
+dynamicBrake	KEYWORD2
+steerLeft	KEYWORD2
+steerRight	KEYWORD2
+driveForward	KEYWORD2
+setLeftMotor	KEYWORD2
+setRightMotor	KEYWORD2
+setMotorLeft	KEYWORD2
+setMotorRight	KEYWORD2
+setRobotSpeedVector	KEYWORD2
+setSpeedPreset	KEYWORD2
+applyPWM	KEYWORD2
+setDirection	KEYWORD2
+readSinglePingCM	KEYWORD2
+readFilteredDistanceCM	KEYWORD2
+validateSensorHealth	KEYWORD2
 
 #######################################
 # Constants and Literals (LITERAL1)
@@ -38,5 +52,11 @@ setMotorState	KEYWORD2
 NIELIT_ROBOTICS_PRACTICALS_VERSION	LITERAL1
 FORWARD	LITERAL1
 BACKWARD	LITERAL1
-RELEASE	LITERAL1
-BRAKE	LITERAL1
+STOP	LITERAL1
+LEFT	LITERAL1
+RIGHT	LITERAL1
+SPIN_LEFT	LITERAL1
+SPIN_RIGHT	LITERAL1
+BLACK_LINE_MODE	LITERAL1
+SAFE_DISTANCE_CM	LITERAL1
+CRITICAL_DISTANCE_CM	LITERAL1

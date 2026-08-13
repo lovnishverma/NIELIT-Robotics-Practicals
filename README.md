@@ -1,8 +1,10 @@
 # NIELIT Robotics Practicals Library
 
-**Version:** `1.0.0`
+**Version:** `1.0.0`  
+**Target Architecture:** `avr` (Arduino UNO R3 / Nano / ATmega328P)  
+**Curriculum Body:** National Institute of Electronics & Information Technology (NIELIT Ropar)
 
-An all-in-one Arduino library and practical curriculum repository packaging the **NIELIT Robotics Practical Programs (3.1 to 3.8)** as installable, standalone Arduino Examples.
+An educational Arduino library and practical curriculum repository packaging the **NIELIT Robotics Practical Programs (3.1 to 3.8)** as installable, standalone Arduino Examples.
 
 This library is designed for students, educators, and robotics enthusiasts learning embedded robotics, mobile robot kinematics, motor driver electronics, wireless teleoperation, and autonomous navigation algorithms.
 
@@ -10,30 +12,28 @@ This library is designed for students, educators, and robotics enthusiasts learn
 
 ## 📑 Robotics Practicals Curriculum
 
-| Practical | Title & Focus | Simulation Link(s) |
+| Practical | Title & Core Focus | Simulation Link(s) |
 | :--- | :--- | :--- |
-| **3.1** | **Robotics Assembly & Power Distribution Dynamics**<br>Dual DC motor chassis assembly, separate logic/motor power rails, common GND bonding, and startup diagnostics. | [Tinkercad Simulation](https://www.tinkercad.com/things/itgeuX95VvZ-two-dc-motor-l293d) |
-| **3.2** | **Inductive Load Control — Interfacing the L293D Motor Driver Shield**<br>H-Bridge internal switching architecture, inductive back-EMF suppression, and state verification (CW, CCW, Active Brake, Coast). | *(simulation link will be added soon)* |
+| **3.1** | **Robotics Assembly & Power Distribution Dynamics**<br>Dual DC motor chassis assembly, separate logic/motor power rails, common GND bonding, and pre-flight rotation diagnostics. | [Tinkercad Simulation](https://www.tinkercad.com/things/itgeuX95VvZ-two-dc-motor-l293d) |
+| **3.2** | **Inductive Load Control — Interfacing the L293D Motor Driver Shield**<br>H-Bridge switching architecture, inductive back-EMF suppression, and state verification (Forward, Active Dynamic Brake, Reverse, Coasting Stop, PWM). | *(simulation link will be added soon)* |
 | **3.3** | **Direct Current Actuation — Interfacing DC Gear Motors**<br>Gear reduction dynamics, independent bi-directional actuation of left and right BO motors, and directional verification. | [Tinkercad Simulation](https://www.tinkercad.com/things/itgeuX95VvZ-two-dc-motor-l293d) |
-| **3.4** | **Kinematic Maneuvers — 2-Wheel Robocar Basic Movements**<br>Differential drive kinematic motion primitives (Forward, Backward, Pivot Turns, Point Spins) running an autonomous square navigation drill. | *(simulation link will be added soon)* |
-| **3.5** | **Speed Vector Regulation — PWM Motor Control**<br>Pulse Width Modulation speed regulation, multi-tier speed presets, smooth acceleration/deceleration ramps, and differential trim calibration. | *(simulation link will be added soon)* |
-| **3.6** | **Wireless Kinematic – Bluetooth Interfacing**<br>Wireless teleoperation via HC-05/HC-06 Bluetooth module, standard RC character protocol parsing, and fail-safe safety watchdog timer. | *(simulation link will be added soon)* |
-| **3.7** | **Autonomous Navigation Capstone I — Line-Following Robot**<br>Dual infrared (IR TCRT5000) reflectance tracking, surface absorption detection, configurable black/white polarity, and reactive differential steering. | *(simulation link will be added soon)* |
-| **3.8** | **Autonomous Navigation Capstone II — Obstacle-Avoiding Vehicle**<br>Autonomous collision avoidance using HC-SR04 ultrasonic distance sensor, real-time echo timing calculation, safety distance thresholding, and automated evasive escape routines. | [Tinkercad Simulation](https://www.tinkercad.com/things/1BEzwkis74q-interafacing-obstacle-using-ultrasonic-sensor) |
+| **3.4** | **Kinematic Maneuvers — 2-Wheel Robocar Basic Movements**<br>Differential drive kinematic motion primitives (Forward, Backward, Pivot Turns, Point Spins) executing an open-loop geometric demonstration. | *(simulation link will be added soon)* |
+| **3.5** | **Speed Vector Regulation — PWM Motor Control**<br>Pulse Width Modulation speed regulation, multi-tier speed presets, smooth acceleration/deceleration ramps to reduce inrush current, and differential trim calibration. | *(simulation link will be added soon)* |
+| **3.6** | **Wireless Kinematic – Bluetooth Interfacing**<br>Wireless teleoperation via HC-05/HC-06 Bluetooth module, case-insensitive RC protocol parser, speed scaling, and communication timeout auto-stop. | *(simulation link will be added soon)* |
+| **3.7** | **Autonomous Navigation Capstone I — Line-Following Robot**<br>Dual infrared (TCRT5000) reflectance tracking, surface absorption detection, configurable black/white polarity, and closed-loop discrete differential steering. | *(simulation link will be added soon)* |
+| **3.8** | **Autonomous Navigation Capstone II — Obstacle-Avoiding Vehicle**<br>Autonomous collision avoidance using HC-SR04 ultrasonic distance sensor, dual-sample acoustic noise filtering, deterministic startup validation, and defensive safe stop on sensor timeout. | [Tinkercad Simulation](https://www.tinkercad.com/things/1BEzwkis74q-interafacing-obstacle-using-ultrasonic-sensor) |
 
 ---
 
-# 🚀 Recommended Student Workflow
+## 🚀 Recommended Student Workflow
 
-Students only need to install the library once.
+Students install the library once via Arduino IDE to access all 8 practicals directly under the **Examples** menu.
 
 ### Step 1 — Install Board Package
-Ensure you have the appropriate board core installed in the Arduino IDE (e.g., **Arduino AVR Boards** for Arduino Uno/Nano, or **ESP32** for ESP32-based robots).
-
-Select your board:
+Ensure you have the **Arduino AVR Boards** core installed in the Arduino IDE:
 > **Tools → Board → Arduino AVR Boards → Arduino Uno**
 
-### Step 2 — Install NIELIT Robotics Practicals
+### Step 2 — Install NIELIT Robotics Practicals Library
 1. Download or clone this repository as a `.zip` archive.
 2. In Arduino IDE, navigate to:
    > **Sketch → Include Library → Add .ZIP Library...**
@@ -42,322 +42,188 @@ Select your board:
 Alternatively, if installing via Library Manager:
 > **Tools → Manage Libraries... → Search `NIELIT Robotics Practicals` → Install**
 
-### Step 3 — Install Third-Party Dependencies
-Most practicals use standard built-in Arduino core libraries. If working with SoftwareSerial or Servo modules, verify that they are available.
+### Step 3 — Open a Practical Example
+Navigate to:
+> **File → Examples → NIELIT Robotics Practicals → [Select Practical 3.1 to 3.8]**
 
-### Step 4 — Open a Practical
-Go to:
-> **File → Examples → NIELIT Robotics Practicals → [Select Practical]**
+### Step 4 — Verify Hardware Connections & Power
+Review the circuit diagram, pin table, and voltage constraints provided in the top header comments of the sketch or in [`extras/Pinouts_and_Wiring_Guide.md`](extras/Pinouts_and_Wiring_Guide.md).
 
-### Step 5 — Verify Hardware Connections
-Follow the circuit diagrams and pin definitions provided in the top header comments of each practical sketch.
-
-### Step 6 — Select Port and Board
-Select:
-* Target Board: **Arduino Uno** (or corresponding board)
-* Appropriate COM / Serial Port
-
-### Step 7 — Verify and Upload
+### Step 5 — Upload and Monitor Telemetry
 1. Click **Verify** (✔) to compile the sketch.
-2. Click **Upload** (➔) to flash the program to the robot.
-3. Open **Serial Monitor** at **9600 baud** to view real-time diagnostics and telemetry.
+2. Click **Upload** (➔) to flash the program to the Arduino.
+3. Open **Serial Monitor** at **9600 baud** to view real-time diagnostics and sensor telemetry.
 
 ---
 
-# 📦 Third-Party Dependencies
+## 🛠 Hardware Bill of Materials (BOM)
 
-| Practical | Required Dependency | Included in Core? | Notes |
-| :--- | :--- | :--- | :--- |
-| **3.1 – 3.5** | None (Standard Arduino Core) | Yes | Uses `Arduino.h` standard GPIO and PWM APIs |
-| **3.6** | `SoftwareSerial` | Yes (AVR Core) | Included with Arduino AVR board package |
-| **3.7** | None (Digital IR Comparator) | Yes | Uses standard digital inputs |
-| **3.8** | None (Pulse timing / HC-SR04) | Yes | Uses `pulseIn()` timing API |
+| Component | Specification | Quantity | Notes |
+| :--- | :--- | :---: | :--- |
+| **Microcontroller** | Arduino UNO R3 (ATmega328P) | 1 | 5V Logic, 16 MHz, Hardware Timer0 PWM on D5/D6 |
+| **Robotic Platform** | 2WD Chassis with ball caster wheel | 1 | Standard educational 2-wheel mobile robot kit |
+| **Actuators** | DC Yellow BO Gear Motors | 2 | Nominal: 3V–6V DC, 1:48 gear ratio |
+| **Motor Driver** | L293D Dual H-Bridge Driver IC / Shield | 1 | Dual H-Bridge with internal clamp diodes |
+| **Motor Power Supply** | 4x AA Battery Holder (6.0V) or 2S Li-ion (7.4V) | 1 | Dedicated motor power rail (**6.0V – 7.4V Recommended**) |
+| **Distance Sensor** | HC-SR04 Ultrasonic Distance Sensor | 1 | 5V DC, 40 kHz ultrasound transducer pair (Practical 3.8) |
+| **Line Sensors** | TCRT5000 IR Line Tracking Modules | 2 | Dual phototransistor reflectance modules (Practical 3.7) |
+| **Wireless Module** | HC-05 / HC-06 Bluetooth Breakout Board | 1 | Default 9600 baud (Practical 3.6, requires 3.3V RX divider) |
+| **Level Shifter** | 1kΩ and 2kΩ Resistors | 1 set | For 5V-to-3.3V voltage divider on Bluetooth RX pin |
 
----
-
-# 🛠 Hardware Components
-
-The practical series utilizes standard laboratory robotics equipment:
-
-* **Microcontroller:** Arduino UNO R3 / Nano / ESP32
-* **Robotic Platform:** 2-Wheel Drive (2WD) chassis with ball caster wheel
-* **Actuators:** 2x DC Yellow BO (Battery Operated) Gear Motors (3V–6V / 1:48 gear ratio)
-* **Motor Driver:** L293D IC / L293D Motor Shield or L298N Dual H-Bridge Module
-* **Power Supply:**
-  * 1x 7.4V Li-ion battery pack (2x 18650 cells) or 4x 1.5V AA battery holder for motors
-  * 5V USB / 9V battery for Arduino logic
-* **Sensors & Communication Modules:**
-  * 1x HC-SR04 Ultrasonic Distance Sensor
-  * 2x TCRT5000 Infrared (IR) Line Tracking Sensor Modules
-  * 1x HC-05 or HC-06 Bluetooth Serial Module
-* **Miscellaneous:** Jumper wires (Male-to-Female, Male-to-Male), breadboard/sensor mounting plate, USB programming cable, chassis on/off switch.
+> For the detailed component specifications and lab equipment guide, see [`extras/Hardware_BOM.md`](extras/Hardware_BOM.md).
 
 ---
 
-# 🔌 GPIO & Pinout Configuration
+## 🔌 GPIO & Pinout Configuration
 
-The standard pin configuration across the NIELIT Robotics series is mapped as follows:
-
-### 1. Standard Motor Driver Pins (Practicals 3.1 - 3.6, 3.8)
+### 1. Standard Motor Driver Pins (Practicals 3.1 – 3.6, 3.8)
 ```cpp
-// Motor Pins
-#define IN1 2
-#define IN2 3
-#define IN3 4
-#define IN4 7
-#define ENA 5
-#define ENB 6
+// Left Motor Driver Pins
+#define ENA 5   // Timer0 PWM Speed Enable (~976 Hz)
+#define IN1 2   // Left Motor Direction Input 1
+#define IN2 3   // Left Motor Direction Input 2
+
+// Right Motor Driver Pins
+#define ENB 6   // Timer0 PWM Speed Enable (~976 Hz)
+#define IN3 4   // Right Motor Direction Input 1
+#define IN4 7   // Right Motor Direction Input 2
 ```
 
-| Function | Arduino UNO Pin | Description |
-| :--- | :--- | :--- |
-| **ENA** | **Pin 5 (PWM)** | Left Motor Speed Control |
-| **IN1** | **Pin 2** | Left Motor Direction A |
-| **IN2** | **Pin 3** | Left Motor Direction B |
-| **IN3** | **Pin 4** | Right Motor Direction A |
-| **IN4** | **Pin 7** | Right Motor Direction B |
-| **ENB** | **Pin 6 (PWM)** | Right Motor Speed Control |
-
-### 2. Ultrasonic Sensor (Practical 3.8)
+### 2. Ultrasonic Sensor Pins (Practical 3.8)
 ```cpp
-// Ultrasonic
-#define TRIG 9
-#define ECHO 10
+#define TRIG 9   // Ultrasonic Trigger Pulse Output (10us pulse)
+#define ECHO 10  // Echo Return Pulse Input (pulseIn timing)
 ```
 
-| HC-SR04 Pin | Arduino UNO Pin | Description |
-| :--- | :--- | :--- |
-| **TRIG** | **Pin 9** | Ultrasonic Trigger Pulse Output |
-| **ECHO** | **Pin 10** | Echo Return Pulse Input |
-
-### 3. Line Follower IR Sensors & Motor Pins (Practical 3.7)
-*Avoids pin conflicts with D2 & D3 used by the IR Line Tracking Sensors:*
+### 3. Line Follower IR Sensor & Motor Pins (Practical 3.7)
+*Avoids GPIO pin conflicts by dedicating D2/D3 to IR Sensors and shifting motor lines to D8–D11:*
 ```cpp
-// IR Sensor Pins
-#define LEFT_SENSOR 2
+// IR Sensor Digital Inputs
+#define LEFT_SENSOR  2
 #define RIGHT_SENSOR 3
 
-// Motor Driver Pins
-#define ENA 5
-#define IN1 8
-#define IN2 9
-#define ENB 6
-#define IN3 10
-#define IN4 11
+// Motor Driver Direction Pins
+#define ENA 5    // Left Motor Speed (Timer0 PWM)
+#define IN1 8    // Left Motor Direction Input 1
+#define IN2 9    // Left Motor Direction Input 2
+#define ENB 6    // Right Motor Speed (Timer0 PWM)
+#define IN3 10   // Right Motor Direction Input 1
+#define IN4 11   // Right Motor Direction Input 2
 ```
 
-| Module / Motor Pin | Arduino UNO Pin | Description |
-| :--- | :--- | :--- |
-| **LEFT_SENSOR** | **Pin 2** | Digital Line Detection (Left IR) |
-| **RIGHT_SENSOR** | **Pin 3** | Digital Line Detection (Right IR) |
-| **ENA** | **Pin 5 (PWM)** | Left Motor Speed Control |
-| **IN1** | **Pin 8** | Left Motor Direction A |
-| **IN2** | **Pin 9** | Left Motor Direction B |
-| **ENB** | **Pin 6 (PWM)** | Right Motor Speed Control |
-| **IN3** | **Pin 10** | Right Motor Direction A |
-| **IN4** | **Pin 11** | Right Motor Direction B |
+### 4. Wireless Bluetooth Module Pins (Practical 3.6)
+```cpp
+#define BT_RX_PIN 12   // Arduino RX <- HC-05 TXD (3.3V TTL out)
+#define BT_TX_PIN 13   // Arduino TX -> HC-05 RXD (via 1k/2k 3.3V voltage divider)
+```
 
-### 4. Wireless Bluetooth Module (Practical 3.6)
-| HC-05 / HC-06 Pin | Arduino UNO Pin | Notes |
-| :--- | :--- | :--- |
-| **TXD** | **Pin 12** (RX) | SoftwareSerial Receive |
-| **RXD** | **Pin 13** (TX) | SoftwareSerial Transmit (via 3.3V voltage divider) |
-
-> **Note:** For more detailed pinout diagrams and driver IC schematics, refer to [`extras/Pinouts_and_Wiring_Guide.md`](file:///c:/Users/princ/Desktop/NIELIT-Robotics-Practicals/extras/Pinouts_and_Wiring_Guide.md).
+> For comprehensive IC pinout schematics and truth tables, see [`extras/Pinouts_and_Wiring_Guide.md`](extras/Pinouts_and_Wiring_Guide.md).
 
 ---
 
-# ⚡ Power Distribution & Electrical Safety
+## ⚡ Power Distribution & Electrical Safety Rules
 
 ```text
-               +----------------------------------+
-               |     BATTERY PACK (+6V to +12V)   |
-               +----------------+-----------------+
+    +-------------------------------------------------------+
+    |         MOTOR BATTERY PACK (6.0V - 7.4V)              |
+    |         (4x AA Alkaline or 2S Li-ion Pack)            |
+    +---------------------------+---------------------------+
                                 |
-             +------------------+------------------+
-             | (+)                                 | (-)
-             v                                     v
-     +---------------+                     +---------------+
-     | L293D / L298N |                     |  COMMON GND   |
-     | Motor VCC2/VM |                     |     RAIL      |
-     +---------------+                     +-------+-------+
-                                                   |
-             +-------------------------------------+
-             |
-             v
-     +---------------+
-     |  Arduino GND  | <------- 5V Regulated USB Supply
-     +---------------+
+               +----------------+----------------+
+               | (+)                             | (-)
+               v                                 v
+       +---------------+                 +---------------+
+       | L293D / L298N |                 |  COMMON GND   |
+       | Motor VCC2/VM |                 |    BUSBAR     |
+       +---------------+                 +-------+-------+
+                                                 |
+               +---------------------------------+
+               |
+               v
+       +---------------+
+       |  Arduino GND  | <------- 5V Regulated USB Supply
+       +---------------+
 ```
 
 ### Safety Principles:
-1. **Never Power Motors Directly from Arduino 5V Pin:** DC motors draw significant inductive current spikes and stall currents (up to 1A+) that can damage the onboard Arduino linear voltage regulator or cause immediate MCU brownout resets.
-2. **Common Ground Connection:** The negative (`-`) terminal of the motor battery pack **MUST** be firmly tied to the Arduino `GND` pin. Without a common ground reference, logic control signals cannot be recognized by the motor driver.
-3. **Inductive Back-EMF Protection:** The L293D IC features internal clamp diodes. If using bare transistors or standard H-bridges without built-in diodes, ensure external flyback diodes (e.g. 1N4007) are installed across motor terminals.
+1. **Never Power Motors Directly from the Arduino 5V Pin:** DC motors draw high stall currents (>800mA) and generate inductive back-EMF spikes that can destroy the Arduino linear regulator or cause continuous MCU brownout resets.
+2. **Mandatory Common Ground Reference:** The negative (`-`) terminal of the motor battery pack **MUST** connect directly to an Arduino `GND` pin. Without a shared 0V reference, TTL control signals cannot be recognized by the motor driver.
+3. **Motor Voltage Scoping:** DC yellow BO motors are rated for 3V to 6V. Accounting for the L293D bipolar saturation drop ($V_{CE,sat} \approx 1.4\text{V}-1.8\text{V}$), a **6.0V to 7.4V** external supply is recommended. Never connect 12V or 3S LiPo battery packs directly to 3V-rated BO gearboxes.
+4. **Bluetooth RX Protection:** The HC-05 baseband transceiver operates at 3.3V logic. Always use a 1kΩ / 2kΩ resistor divider between Arduino D13 (5V TX) and the HC-05 RXD pin to prevent over-voltage degradation.
 
 ---
 
-# 🕹️ Kinematic Control & Maneuvers
+## 🧭 Autonomous Navigation Capstone Details
 
-The robotic platform utilizes **Differential Drive Kinematics**:
-
-* **Forward:** Both Left & Right wheels rotate forward at equal velocity ($v_L = v_R > 0$).
-* **Reverse:** Both Left & Right wheels rotate backward at equal velocity ($v_L = v_R < 0$).
-* **Pivot Turn (Wide Radius):** One wheel remains stationary while the opposing wheel drives forward ($v_L = 0, v_R > 0$ or $v_L > 0, v_R = 0$).
-* **Point Spin (Zero Turning Radius):** Left and Right wheels rotate in opposite directions at equal velocity ($v_L = -v_R$).
-
----
-
-# 📱 Bluetooth Remote Control Protocol
-
-Practical **3.6** utilizes standard wireless character commands compatible with popular Android Arduino RC applications:
-
-| Character | Command Action |
-| :---: | :--- |
-| `F` | Drive Forward |
-| `B` | Drive Backward |
-| `L` | Spin Left (Point turn) |
-| `R` | Spin Right (Point turn) |
-| `G` | Forward Left Curve |
-| `I` | Forward Right Curve |
-| `H` | Backward Left Curve |
-| `J` | Backward Right Curve |
-| `S` | Stop All Motors |
-| `0` – `9` | Speed Presets (0 = lowest duty cycle, 9 / 'q' = 100% PWM) |
-
-> **Fail-Safe Watchdog:** If the Bluetooth signal drops or the mobile device disconnects while the vehicle is driving, the embedded watchdog timer will automatically stop the robot within **1000 ms** to avoid collisions.
-
----
-
-# 🧭 Autonomous Navigation Capstones
-
-### Capstone I: Line Tracking (Practical 3.7)
-* **Smooth Differential Steering:** Uses gentle velocity bias (`SLOW_SPEED` on inside wheel, `TURN_SPEED` on outside wheel) rather than aggressive motor-reversing pivot turns, ensuring fluid and stable trajectory corrections.
-* **Dual IR Reflectance Sensors:** TCRT5000 sensors mounted under the front chassis detect optical reflectivity differences.
-* **Bench Calibration & Lift Test:** Before placing the robot on the track, lift the chassis and check Serial Monitor telemetry (`L=... R=...`):
-  | Surface Tested | Default Expectation | Inverted Modules |
-  | :--- | :---: | :---: |
-  | **White Floor** | `0` (`LOW`) | `1` (`HIGH`) |
-  | **Black Line** | `1` (`HIGH`) | `0` (`LOW`) |
-  *(If your modules output `LOW` on black, simply set `BLACK_LINE_MODE = false`)*
-* **Motor Direction Verification:** Verify that `driveForward()` moves both wheels forward, `steerLeft()` curves left, and `steerRight()` curves right. Swap motor leads if a motor is mechanically reversed.
+### Capstone I: Line Following (Practical 3.7)
+* **Closed-Loop Discrete Differential Steering:** Uses discrete forward speed differentials (`SLOW_SPEED = 50` on the inside wheel, `TURN_SPEED = 180` on the outside wheel) to smoothly steer the vehicle toward the line without reverse-motor jerk.
+* **Track Geometry:** Designed for 15mm–19mm black electrical tape straddled by dual TCRT5000 sensors spaced 22mm–28mm apart.
+* **Configurable Polarity:** Set `BLACK_LINE_MODE = true` for black line on white surface, or `false` for inverted modules.
 
 ### Capstone II: Obstacle Avoidance (Practical 3.8)
-* Employs the HC-SR04 ultrasonic sensor emitting 40 kHz acoustic pulses.
-* Calculates spatial clearance in centimeters: $\text{Distance} = \frac{\Delta t \times 0.0343}{2}$.
-* Implements a state machine:
-  1. **Clear Path ($> 25\text{ cm}$):** Cruising forward.
-  2. **Impediment ($12\text{ cm} - 25\text{ cm}$):** Stop, brief reverse clearance, execute evasive spin turn.
-  3. **Critical Hazard ($< 12\text{ cm}$):** Emergency full stop, multi-step reverse and wide-angle escape maneuver.
+* **Deterministic Startup Validation:** Validates ultrasonic sensor health across a 10-attempt bounded check before autonomous mode is activated. If the sensor fails, the robot halts and locks in safe stop.
+* **Strict Defensive Safety Model (`UNKNOWN ≠ CLEAR`):**
+  | Distance Reading | Operating State | Executed Action |
+  | :--- | :--- | :--- |
+  | **Valid Distance $> 25\text{ cm}$** | Path Confirmed Clear | Cruise Forward (`CRUISE_SPEED = 180`) |
+  | **$12\text{ cm} < \text{Valid Distance} \le 25\text{ cm}$** | Impediment Detected | Stop → Reverse 350ms → Spin Turn 450ms |
+  | **$0 < \text{Valid Distance} \le 12\text{ cm}$** | Critical Proximity | Emergency Stop → Extended Reverse 600ms → Wide Spin Turn 600ms |
+  | **Timeout (`-1`) / Sensor Loss** | Sensor Fault / Unknown | **DEFENSIVE SAFE STOP (Hold in place)** |
+* **Deadlock Prevention:** Alternates evasive turn direction (`turnRightNext = !turnRightNext`) to prevent corner trapping.
 
 ---
 
-# 📚 NIELIT Library API
-
-The package exposes a helper library API that can be included in custom student projects:
-
-```cpp
-#include <NIELIT_Robotics_Practicals.h>
-
-void setup() {
-    Serial.begin(9600);
-
-    // Print library version banner
-    NIELIT::Robotics::printLibraryInfo(Serial);
-    
-    // Print standardized practical header
-    NIELIT::Robotics::printPracticalHeader(Serial, "3.4", "Kinematic Maneuvers");
-}
-
-void loop() {
-}
-```
-
----
-
-# 📁 Package Structure
+## 📁 Repository Structure
 
 ```text
 NIELIT-Robotics-Practicals/
-├── library.properties
-├── keywords.txt
-├── INSTALL.txt
-├── LICENSE
-├── README.md
+├── .github/
+│   └── workflows/
+│       └── compile.yml                 # Automated CI compilation workflow
+├── library.properties                  # Arduino Library Manager metadata
+├── keywords.txt                        # Syntax highlighting definitions
+├── INSTALL.txt                         # Quick install guide
+├── LICENSE                             # MIT License
+├── README.md                           # Master documentation
 ├── src/
-│   ├── NIELIT_Robotics_Practicals.h
-│   └── NIELIT_Robotics_Practicals.cpp
+│   ├── NIELIT_Robotics_Practicals.h    # Core helper library header
+│   └── NIELIT_Robotics_Practicals.cpp  # Core library implementation
 ├── examples/
 │   ├── 3_1_Robotics_Assembly_Power_Distribution/
-│   │   └── 3_1_Robotics_Assembly_Power_Distribution.ino
 │   ├── 3_2_Inductive_Load_Control_L293D/
-│   │   └── 3_2_Inductive_Load_Control_L293D.ino
 │   ├── 3_3_DC_Gear_Motor_Actuation/
-│   │   └── 3_3_DC_Gear_Motor_Actuation.ino
 │   ├── 3_4_Kinematic_Maneuvers_Robocar/
-│   │   └── 3_4_Kinematic_Maneuvers_Robocar.ino
 │   ├── 3_5_Speed_Vector_PWM_Control/
-│   │   └── 3_5_Speed_Vector_PWM_Control.ino
 │   ├── 3_6_Wireless_Bluetooth_Kinematic/
-│   │   └── 3_6_Wireless_Bluetooth_Kinematic.ino
 │   ├── 3_7_Line_Following_Robot/
-│   │   └── 3_7_Line_Following_Robot.ino
 │   └── 3_8_Obstacle_Avoiding_Vehicle/
-│       └── 3_8_Obstacle_Avoiding_Vehicle.ino
 └── extras/
-    └── Pinouts_and_Wiring_Guide.md
+    ├── Pinouts_and_Wiring_Guide.md     # IC pinouts and wiring schematics
+    ├── Validation_Matrix.md            # Verification status and HW check guide
+    └── Hardware_BOM.md                 # Complete Bill of Materials
 ```
 
 ---
 
-# 🔧 Troubleshooting
+## 🔍 Verification Status & Known Limitations
 
-### 1. Motors are rotating in the reverse direction
-* **Fix:** Swap the two wire leads connecting the motor terminals to the motor driver output (`OUT1`/`OUT2` or `OUT3`/`OUT4`).
+For complete details on automated compiler validation vs physical laboratory testing requirements, refer to [`extras/Validation_Matrix.md`](extras/Validation_Matrix.md).
 
-### 2. Robot does not move or motor hums/whines without turning
-* **Fix:** The PWM value may be below the static friction threshold of the gearbox. Increase PWM to at least `150`–`180`, or check if the motor battery voltage has dropped.
-
-### 3. Arduino resets or disconnects whenever motors start
-* **Fix:** Classic brownout condition caused by drawing motor current through the Arduino 5V regulator. Separate motor power (use dedicated battery) and ensure common ground (`GND`) is connected.
-
-### 4. Bluetooth module does not pair or respond
-* **Fix:** Check baud rate (default is `9600`). Verify that Arduino `TX` connects to HC-05 `RX` (via voltage divider) and Arduino `RX` connects to HC-05 `TX`.
-
-### 5. Line sensor does not detect black tape
-* **Fix:** Adjust the onboard sensitivity potentiometer on the TCRT5000 module until the onboard indicator LED turns on over white and off over black. Ensure sensor height is 5mm–10mm above the track.
+* **Statically & Compiler-Verified:** 100% build pass with 0 errors on official AVR core (`arduino-cli compile --fqbn arduino:avr:uno`), pin conflict absence, defensive timeout stops, and bounds clamping.
+* **Requires Physical Hardware Verification:** Motor terminal wire polarity (bench rotation test), floor-specific 90° turn timing calibration (`TURN_TIME_MS`), and TCRT5000 optical potentiometer threshold tuning.
 
 ---
 
-# 🏷️ Version
-
-Current release:
-```text
-v1.0.0
-```
-
----
-
-# 🎓 Educational Purpose
-
-This library is designed for educational laboratory courses in:
-* Mobile Robotics & Autonomous Vehicles
-* Embedded Systems & Microcontroller Interfacing
-* Mechatronics & Actuator Control
-* Kinematics & PWM Speed Regulation
-* Sensor Integration & Computer-Controlled Navigation
-
----
-
-# 👥 Authors
+## 👥 Authors & Maintainers
 
 * **Dr. Sarwan Singh**
 * **Lovnish Verma**
 
-*NIELIT / Embedded Systems, AI & IoT Training*
+*National Institute of Electronics & Information Technology (NIELIT Ropar)*  
+*Embedded Systems, Robotics, AI & IoT Division*
 
 ---
 
-# 📄 License
+## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](file:///c:/Users/princ/Desktop/NIELIT-Robotics-Practicals/LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.

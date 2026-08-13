@@ -1,0 +1,54 @@
+name: Compile Examples
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Arduino CLI
+        uses: arduino/setup-arduino-cli@v1
+
+      - name: Update Arduino Core Index
+        run: arduino-cli core update-index
+
+      - name: Install AVR Core
+        run: arduino-cli core install arduino:avr
+
+      - name: Compile All 8 Practical Examples
+        run: |
+          set -e
+          echo "=========================================="
+          echo "Starting Batch Compilation of All Examples"
+          echo "=========================================="
+          
+          EXAMPLES=(
+            "examples/3_1_Robotics_Assembly_Power_Distribution/3_1_Robotics_Assembly_Power_Distribution.ino"
+            "examples/3_2_Inductive_Load_Control_L293D/3_2_Inductive_Load_Control_L293D.ino"
+            "examples/3_3_DC_Gear_Motor_Actuation/3_3_DC_Gear_Motor_Actuation.ino"
+            "examples/3_4_Kinematic_Maneuvers_Robocar/3_4_Kinematic_Maneuvers_Robocar.ino"
+            "examples/3_5_Speed_Vector_PWM_Control/3_5_Speed_Vector_PWM_Control.ino"
+            "examples/3_6_Wireless_Bluetooth_Kinematic/3_6_Wireless_Bluetooth_Kinematic.ino"
+            "examples/3_7_Line_Following_Robot/3_7_Line_Following_Robot.ino"
+            "examples/3_8_Obstacle_Avoiding_Vehicle/3_8_Obstacle_Avoiding_Vehicle.ino"
+          )
+          
+          for SKETCH in "${EXAMPLES[@]}"; do
+            echo "------------------------------------------"
+            echo "Compiling: $SKETCH"
+            arduino-cli compile --fqbn arduino:avr:uno --libraries . "$SKETCH"
+            echo "PASSED: $SKETCH"
+          done
+          
+          echo "=========================================="
+          echo "All 8 practical programs compiled with 0 errors!"
+          echo "=========================================="
