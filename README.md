@@ -1,6 +1,6 @@
 # NIELIT Robotics Practicals Library
 
-**Version:** `1.0.3`
+**Version:** `1.0.1`
 
 An all-in-one Arduino library and practical curriculum repository packaging the **NIELIT Robotics Practical Programs (3.1 to 3.8)** as installable, standalone Arduino Examples.
 
@@ -327,7 +327,7 @@ NIELIT-Robotics-Practicals/
 
 Current release:
 ```text
-v1.0.3
+v1.0.1
 ```
 
 ---
