@@ -36,7 +36,7 @@
 #define IN4 7
 
 // Motor Trim Offsets (Adjust if one motor runs faster than the other)
-// Range: -50 to +50
+// Example: If robot veers slightly right, increase LEFT_MOTOR_TRIM or decrease RIGHT_MOTOR_TRIM
 const int LEFT_MOTOR_TRIM  = 0;
 const int RIGHT_MOTOR_TRIM = 0;
 
@@ -144,10 +144,10 @@ void setRobotSpeedVector(bool forward, int pwmMagnitude) {
 
 // Safe stop
 void stopRobot() {
-  analogWrite(ENA, 0);
-  analogWrite(ENB, 0);
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
+  analogWrite(ENA, 0);
+  analogWrite(ENB, 0);
 }

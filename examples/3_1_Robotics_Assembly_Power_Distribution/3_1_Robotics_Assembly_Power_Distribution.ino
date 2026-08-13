@@ -5,7 +5,8 @@
   Description:
   Demonstrates robotic chassis power distribution dynamics, separate logic
   and motor power supplies, common ground bonding, and power rail diagnostics.
-  Performs a startup self-test sequence verifying dual motor channels.
+  Executes a comprehensive 4-phase diagnostic drill verifying forward and reverse
+  rotation for both motor channels before deployment.
 
   Tinkercad Simulation:
   https://www.tinkercad.com/things/itgeuX95VvZ-two-dc-motor-l293d
@@ -36,11 +37,10 @@
 #define IN3 4   // Right Motor Input 1
 #define IN4 7   // Right Motor Input 2
 
-// Built-in status indicator
+// Built-in status indicator LED
 #define STATUS_LED 13
 
 void setup() {
-  // Initialize Serial Monitor for telemetry
   Serial.begin(9600);
   
   // Configure Motor Control Pins as Outputs
@@ -58,62 +58,115 @@ void setup() {
   Serial.println(F("=================================================="));
   Serial.println(F(" Practical 3.1: Robotics Assembly & Power Check   "));
   Serial.println(F("=================================================="));
-  Serial.println(F("Checking Power Rails:"));
-  Serial.println(F(" - Logic VCC: 5V regulated from Arduino"));
-  Serial.println(F(" - Motor VCC: External Battery pack (Common GND)"));
-  Serial.println(F("Starting 3-second power stabilization delay..."));
+  Serial.println(F("Power Distribution Architecture:"));
+  Serial.println(F(" - Logic Rail: 5V regulated from Arduino"));
+  Serial.println(F(" - Motor Rail: External Battery pack (Common GND)"));
+  Serial.println(F("Starting 3-second power stabilization countdown...\n"));
   
   for (int i = 3; i > 0; i--) {
     digitalWrite(STATUS_LED, HIGH);
     delay(500);
     digitalWrite(STATUS_LED, LOW);
     delay(500);
-    Serial.print(F("Ready in: "));
+    Serial.print(F("Stabilizing: "));
     Serial.print(i);
     Serial.println(F("s"));
   }
   
-  Serial.println(F("Power stabilized. Commencing motor diagnostics...\n"));
+  Serial.println(F("Power stabilized. Commencing 4-phase diagnostics...\n"));
 }
 
 void loop() {
-  // --- Test 1: Left Motor Forward Pulse ---
-  Serial.println(F("[Diagnostic 1] Testing Left Motor Channel (Forward 1.5s)..."));
+  // ===================================================
+  // Phase 1: Left Motor Polarity & Rotation Check
+  // ===================================================
+  Serial.println(F("[Phase 1] Left Motor -> FORWARD (1.5s)... (Verify wheel turns FORWARD)"));
   digitalWrite(STATUS_LED, HIGH);
-  analogWrite(ENA, 200);   // Set 78% PWM power
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
+  setLeftMotor(true, 200);
+  delay(1500);
+  stopAllMotors();
+  digitalWrite(STATUS_LED, LOW);
+  delay(800);
+
+  Serial.println(F("[Phase 1] Left Motor -> REVERSE (1.5s)... (Verify wheel turns REVERSE)"));
+  digitalWrite(STATUS_LED, HIGH);
+  setLeftMotor(false, 200);
   delay(1500);
   stopAllMotors();
   digitalWrite(STATUS_LED, LOW);
   delay(1000);
 
-  // --- Test 2: Right Motor Forward Pulse ---
-  Serial.println(F("[Diagnostic 2] Testing Right Motor Channel (Forward 1.5s)..."));
+  // ===================================================
+  // Phase 2: Right Motor Polarity & Rotation Check
+  // ===================================================
+  Serial.println(F("[Phase 2] Right Motor -> FORWARD (1.5s)... (Verify wheel turns FORWARD)"));
   digitalWrite(STATUS_LED, HIGH);
-  analogWrite(ENB, 200);   // Set 78% PWM power
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
+  setRightMotor(true, 200);
+  delay(1500);
+  stopAllMotors();
+  digitalWrite(STATUS_LED, LOW);
+  delay(800);
+
+  Serial.println(F("[Phase 2] Right Motor -> REVERSE (1.5s)... (Verify wheel turns REVERSE)"));
+  digitalWrite(STATUS_LED, HIGH);
+  setRightMotor(false, 200);
   delay(1500);
   stopAllMotors();
   digitalWrite(STATUS_LED, LOW);
   delay(1000);
 
-  // --- Test 3: Dual Motor Synchronized Forward Check ---
-  Serial.println(F("[Diagnostic 3] Testing Dual Channel Power Distribution (2.0s)..."));
+  // ===================================================
+  // Phase 3: Dual Motor Synchronous Forward Thrust
+  // ===================================================
+  Serial.println(F("[Phase 3] Dual Channel Synchronized FORWARD (2.0s)..."));
   digitalWrite(STATUS_LED, HIGH);
-  analogWrite(ENA, 220);
-  analogWrite(ENB, 220);
-  digitalWrite(IN1, HIGH);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
+  setLeftMotor(true, 220);
+  setRightMotor(true, 220);
+  delay(2000);
+  stopAllMotors();
+  digitalWrite(STATUS_LED, LOW);
+  delay(1000);
+
+  // ===================================================
+  // Phase 4: Dual Motor Synchronous Reverse Pull
+  // ===================================================
+  Serial.println(F("[Phase 4] Dual Channel Synchronized REVERSE (2.0s)..."));
+  digitalWrite(STATUS_LED, HIGH);
+  setLeftMotor(false, 220);
+  setRightMotor(false, 220);
   delay(2000);
   stopAllMotors();
   digitalWrite(STATUS_LED, LOW);
   
-  Serial.println(F("\nPower distribution test cycle complete. Pausing 5 seconds.\n"));
-  delay(5000);
+  Serial.println(F("\n--- Diagnostic Cycle Completed ---"));
+  Serial.println(F("Note: If any wheel rotates in reverse, swap its motor terminal leads.\n"));
+  delay(4000);
+}
+
+// -------------------------------------------------------------
+// Motor Control Helpers
+// -------------------------------------------------------------
+
+void setLeftMotor(bool forward, int speed) {
+  if (forward) {
+    digitalWrite(IN1, HIGH);
+    digitalWrite(IN2, LOW);
+  } else {
+    digitalWrite(IN1, LOW);
+    digitalWrite(IN2, HIGH);
+  }
+  analogWrite(ENA, speed);
+}
+
+void setRightMotor(bool forward, int speed) {
+  if (forward) {
+    digitalWrite(IN3, HIGH);
+    digitalWrite(IN4, LOW);
+  } else {
+    digitalWrite(IN3, LOW);
+    digitalWrite(IN4, HIGH);
+  }
+  analogWrite(ENB, speed);
 }
 
 void stopAllMotors() {
