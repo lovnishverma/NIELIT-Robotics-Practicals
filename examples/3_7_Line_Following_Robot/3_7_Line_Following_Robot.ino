@@ -4,19 +4,19 @@
 
   Description:
   Implements an autonomous line-following mobile robot utilizing dual infrared (IR)
-  reflectance sensors (e.g., TCRT5000 modules). Features configurable line polarity
-  (Black line on White surface vs White line on Black surface), adaptive differential
-  steering corrections, and junction detection.
+  reflectance sensors (e.g., TCRT5000 modules) with smooth differential steering.
+  Features real-time sensor telemetry, configurable line polarity (Black line on
+  White surface vs White line on Black surface), and intersection/end detection.
 
-  Sensor Logic Table (Black Line on White Surface):
-  +-------------+--------------+------------------+------------------------------+
-  | Left Sensor | Right Sensor | Track Condition  | Robot Maneuver               |
-  +-------------+--------------+------------------+------------------------------+
-  |  0 (White)  |  0 (White)   | On Track (Center)| Forward (Both motors drive)  |
-  |  1 (Black)  |  0 (White)   | Veering Right    | Steer Left (Left=0, Right=PWM)|
-  |  0 (White)  |  1 (Black)   | Veering Left     | Steer Right (Left=PWM, Right=0)|
-  |  1 (Black)  |  1 (Black)   | Intersection / End| Stop or Cross Junction       |
-  +-------------+--------------+------------------+------------------------------+
+  Sensor Calibration & Logic (Standard: Black line on White surface):
+  +-------------+--------------+------------------+--------------------------------------+
+  | Left Sensor | Right Sensor | Track Condition  | Robot Maneuver                       |
+  +-------------+--------------+------------------+--------------------------------------+
+  |  0 (White)  |  0 (White)   | Centered on Path | Forward (Both motors drive forward)  |
+  |  1 (Black)  |  0 (White)   | Veering Right    | Steer Left (Left slower, Right fast) |
+  |  0 (White)  |  1 (Black)   | Veering Left     | Steer Right (Left fast, Right slower)|
+  |  1 (Black)  |  1 (Black)   | Intersection/End | Stop vehicle                         |
+  +-------------+--------------+------------------+--------------------------------------+
 
   Hardware Connections:
   -------------------------------------------------------------
@@ -24,7 +24,7 @@
   -------------------------------------------------------------
   Left IR Sensor (OUT)  Pin 2 (Digital)  Left Track Sensor
   Right IR Sensor (OUT) Pin 3 (Digital)  Right Track Sensor
-  Sensor VCC / GND      5V / GND         Power supply
+  Sensor VCC / GND      5V / GND         5V Power Rail
   -------------------------------------------------------------
   Motor Driver Pin      Arduino Pin      Description
   -------------------------------------------------------------
@@ -37,128 +37,174 @@
   -------------------------------------------------------------
 */
 
-// IR Sensor Pins (Digital output from IR modules with onboard comparators)
-#define LEFT_SENSOR  2
-#define RIGHT_SENSOR 3
+// =====================================================
+// IR SENSOR PINS
+// =====================================================
+#define LEFT_SENSOR   2
+#define RIGHT_SENSOR  3
 
-// Motor Driver Pins
+// =====================================================
+// MOTOR DRIVER (L293D / L298N)
+// =====================================================
+// LEFT MOTOR
 #define ENA 5
 #define IN1 8
 #define IN2 9
 
+// RIGHT MOTOR
 #define ENB 6
 #define IN3 10
 #define IN4 11
 
-// Base cruising and turning speed (PWM 0-255)
-const int FORWARD_SPEED = 160;
+// =====================================================
+// SPEED CONFIGURATION
+// =====================================================
+const int FORWARD_SPEED = 150;
 const int TURN_SPEED    = 180;
+const int SLOW_SPEED    = 50;
 
-// Set to true if tracking a BLACK line on a WHITE floor (Standard)
-// Set to false if tracking a WHITE line on a BLACK floor
+// true  = Black line on White surface (Standard)
+// false = White line on Black surface
 const bool BLACK_LINE_MODE = true;
 
+// =====================================================
+// SETUP
+// =====================================================
 void setup() {
   Serial.begin(9600);
 
-  // Initialize Sensors
   pinMode(LEFT_SENSOR, INPUT);
   pinMode(RIGHT_SENSOR, INPUT);
 
-  // Initialize Motor Control Pins
   pinMode(ENA, OUTPUT);
   pinMode(IN1, OUTPUT);
   pinMode(IN2, OUTPUT);
+
   pinMode(ENB, OUTPUT);
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
   stopRobot();
 
-  Serial.println(F("=================================================="));
-  Serial.println(F(" Practical 3.7: Autonomous Line Following Robot  "));
-  Serial.println(F("=================================================="));
+  Serial.println(F("=============================================="));
+  Serial.println(F(" Practical 3.7 - Line Following Robot         "));
+  Serial.println(F("=============================================="));
   Serial.print(F("Mode: "));
-  Serial.println(BLACK_LINE_MODE ? F("Black line on White surface") : F("White line on Dark surface"));
-  Serial.println(F("Place robot on track. Starting in 3 seconds...\n"));
+  if (BLACK_LINE_MODE) {
+    Serial.println(F("BLACK line / WHITE surface"));
+  } else {
+    Serial.println(F("WHITE line / BLACK surface"));
+  }
+  Serial.println(F("Starting in 3 seconds..."));
   delay(3000);
 }
 
+// =====================================================
+// MAIN LOOP
+// =====================================================
 void loop() {
-  // Read Digital Values from IR Sensor Modules
-  // Most modules output LOW (0) when reflecting white and HIGH (1) over dark/black surface
   int rawLeft  = digitalRead(LEFT_SENSOR);
   int rawRight = digitalRead(RIGHT_SENSOR);
 
-  // Determine normalized line detection boolean
-  bool leftOnLine  = BLACK_LINE_MODE ? (rawLeft == HIGH)  : (rawLeft == LOW);
-  bool rightOnLine = BLACK_LINE_MODE ? (rawRight == HIGH) : (rawRight == LOW);
+  // Normalize sensor readings:
+  // Default expectation: HIGH = BLACK surface, LOW = WHITE surface
+  // If your TCRT5000 module behaves opposite, adjust polarity logic here.
+  bool leftOnLine;
+  bool rightOnLine;
 
-  // --- Decision Logic ---
+  if (BLACK_LINE_MODE) {
+    leftOnLine  = (rawLeft == HIGH);
+    rightOnLine = (rawRight == HIGH);
+  } else {
+    leftOnLine  = (rawLeft == LOW);
+    rightOnLine = (rawRight == LOW);
+  }
+
+  // ===================================================
+  // REAL-TIME SENSOR TELEMETRY
+  // ===================================================
+  Serial.print(F("L="));
+  Serial.print(rawLeft);
+  Serial.print(F(" R="));
+  Serial.print(rawRight);
+  Serial.print(F(" | Line: L="));
+  Serial.print(leftOnLine);
+  Serial.print(F(" R="));
+  Serial.println(rightOnLine);
+
+  // ===================================================
+  // SMOOTH DIFFERENTIAL LINE-FOLLOWING LOGIC
+  // ===================================================
+  // Condition 00: Neither sensor detects line (Robot is centered between sensors)
   if (!leftOnLine && !rightOnLine) {
-    // Condition 1: Both sensors on white floor (Line is perfectly centered)
-    // Drive Forward
     driveForward(FORWARD_SPEED);
   }
+  // Condition 10: Left sensor hit the line (Robot veered right -> smooth correction left)
   else if (leftOnLine && !rightOnLine) {
-    // Condition 2: Left sensor hit black line (Vehicle drifted to the right)
-    // Correct by turning Left
-    pivotLeft(TURN_SPEED);
+    steerLeft();
   }
+  // Condition 01: Right sensor hit the line (Robot veered left -> smooth correction right)
   else if (!leftOnLine && rightOnLine) {
-    // Condition 3: Right sensor hit black line (Vehicle drifted to the left)
-    // Correct by turning Right
-    pivotRight(TURN_SPEED);
+    steerRight();
   }
+  // Condition 11: Both sensors detect line (Crossroad / Stop Marker / T-Junction)
   else {
-    // Condition 4: Both sensors on black line (Crossroad / Stop Mark / T-Junction)
-    // Default action: Stop vehicle
     stopRobot();
-    Serial.println(F("[Track] Both sensors active: Line intersection/End reached."));
+    Serial.println(F("[TRACK] Both sensors active - Junction/End marker detected"));
+    delay(100);
   }
 
-  // Small telemetry heartbeat (reduced delay for fast real-time response)
-  delay(10);
+  delay(5);
 }
 
-// -------------------------------------------------------------
-// Robot Movement Routines
-// -------------------------------------------------------------
+// =====================================================
+// MOTOR CONTROL PRIMITIVES (Smooth Differential Drive)
+// =====================================================
 
 void driveForward(int speed) {
-  analogWrite(ENA, speed);
-  analogWrite(ENB, speed);
+  // LEFT MOTOR FORWARD
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
+
+  // RIGHT MOTOR FORWARD
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-}
 
-void pivotLeft(int speed) {
-  // Left motor reversed slightly or stopped, Right motor drives forward
-  analogWrite(ENA, speed / 3);
-  analogWrite(ENB, speed);
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  digitalWrite(IN3, HIGH);
-  digitalWrite(IN4, LOW);
-}
-
-void pivotRight(int speed) {
-  // Right motor reversed slightly or stopped, Left motor drives forward
   analogWrite(ENA, speed);
-  analogWrite(ENB, speed / 3);
+  analogWrite(ENB, speed);
+}
+
+void steerLeft() {
+  // Smooth differential steer left: Left motor slower, Right motor faster
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+
+  analogWrite(ENA, SLOW_SPEED);
+  analogWrite(ENB, TURN_SPEED);
+}
+
+void steerRight() {
+  // Smooth differential steer right: Left motor faster, Right motor slower
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+
+  analogWrite(ENA, TURN_SPEED);
+  analogWrite(ENB, SLOW_SPEED);
 }
 
 void stopRobot() {
   analogWrite(ENA, 0);
   analogWrite(ENB, 0);
+
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
+
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
 }

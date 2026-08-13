@@ -232,9 +232,15 @@ Practical **3.6** utilizes standard wireless character commands compatible with 
 # 🧭 Autonomous Navigation Capstones
 
 ### Capstone I: Line Tracking (Practical 3.7)
-* Uses dual TCRT5000 infrared reflectance sensors mounted under the front bumper.
-* Detects contrast between high-absorption dark tape (logic `HIGH`) and reflective white floor (logic `LOW`).
-* Continuously evaluates sensor states to apply proactive differential steering corrections.
+* **Smooth Differential Steering:** Uses gentle velocity bias (`SLOW_SPEED` on inside wheel, `TURN_SPEED` on outside wheel) rather than aggressive motor-reversing pivot turns, ensuring fluid and stable trajectory corrections.
+* **Dual IR Reflectance Sensors:** TCRT5000 sensors mounted under the front chassis detect optical reflectivity differences.
+* **Bench Calibration & Lift Test:** Before placing the robot on the track, lift the chassis and check Serial Monitor telemetry (`L=... R=...`):
+  | Surface Tested | Default Expectation | Inverted Modules |
+  | :--- | :---: | :---: |
+  | **White Floor** | `0` (`LOW`) | `1` (`HIGH`) |
+  | **Black Line** | `1` (`HIGH`) | `0` (`LOW`) |
+  *(If your modules output `LOW` on black, simply set `BLACK_LINE_MODE = false`)*
+* **Motor Direction Verification:** Verify that `driveForward()` moves both wheels forward, `steerLeft()` curves left, and `steerRight()` curves right. Swap motor leads if a motor is mechanically reversed.
 
 ### Capstone II: Obstacle Avoidance (Practical 3.8)
 * Employs the HC-SR04 ultrasonic sensor emitting 40 kHz acoustic pulses.
