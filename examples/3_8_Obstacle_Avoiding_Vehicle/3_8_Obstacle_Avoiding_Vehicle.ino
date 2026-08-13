@@ -6,17 +6,17 @@
 
   Objective:
   Implement an autonomous collision avoidance system using an HC-SR04 ultrasonic distance sensor,
-  dual-sample acoustic noise filtering, and a reactive evasive navigation state machine.
+  dual-sample acoustic noise filtering, deterministic sensor health validation, and a defensive navigation state machine.
 
   Description:
   Demonstrates autonomous obstacle detection and evasion on a mobile robot.
   Measures time-of-flight acoustic echo duration to calculate forward spatial clearance in centimeters.
-  Executes automated navigation routines: Forward Cruise, Obstacle Avoidance (Stop -> Reverse -> Spin Turn),
-  and Critical Emergency Evasion with adaptive alternating turn directions to prevent corner deadlock.
+  Executes automated navigation routines: Forward Cruise (on confirmed clear path), Obstacle Avoidance (Stop -> Reverse -> Spin Turn),
+  Critical Emergency Evasion, and a Defensive Safe Stop on sensor timeout or hardware communication loss.
 
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
-  - HC-SR04 Ultrasonic Distance Sensor Module (Operating: 5V DC, 40 kHz ultrasound)
+  - HC-SR04 Ultrasonic Distance Sensor Module (5V DC VCC, 40 kHz ultrasound transducer pair)
   - L293D / L298N Dual H-Bridge Motor Driver
   - 2x DC Yellow BO Gear Motors (Nominal: 3V - 6V, 1:48 gear ratio)
   - 2WD Robotic Chassis with caster wheel
@@ -48,25 +48,25 @@
   Dual-sample filtering averages two successive pings to eliminate isolated acoustic bounce glitches.
 
   Obstacle Avoidance Decision State Table:
-  +---------------------------------+-----------------------+-----------------------------------------------+
-  | Distance Measurement            | Navigation State      | Robot Action Executed                         |
-  +---------------------------------+-----------------------+-----------------------------------------------+
-  | Distance > 25 cm OR Timeout(-1) | Path Clear            | Cruise Forward at normal speed                |
-  | 12 cm < Distance <= 25 cm       | Impediment Detected   | Stop -> Reverse 350ms -> Spin Turn 450ms      |
-  | 0 < Distance <= 12 cm           | Critical Proximity    | Stop -> Reverse 600ms -> Wide Spin Turn 600ms |
-  +---------------------------------+-----------------------+-----------------------------------------------+
+  +--------------------------------+-----------------------+-----------------------------------------------+
+  | Distance Measurement           | Navigation State      | Robot Action Executed                         |
+  +--------------------------------+-----------------------+-----------------------------------------------+
+  | Valid Distance > 25 cm         | Path Confirmed Clear  | Cruise Forward at normal speed                |
+  | 12 cm < Valid Distance <= 25 cm| Impediment Detected   | Stop -> Reverse 350ms -> Spin Turn 450ms      |
+  | 0 < Valid Distance <= 12 cm    | Critical Proximity    | Stop -> Reverse 600ms -> Wide Spin Turn 600ms |
+  | Timeout (-1) / Invalid Echo    | Sensor Fault/Unknown  | DEFENSIVE SAFE STOP (Hold in place)           |
+  +--------------------------------+-----------------------+-----------------------------------------------+
 
   Expected Behavior:
-  1. Startup: Startup self-test validates sensor communication; safe countdown delay of 3 seconds.
-  2. Cruise: In clear open space, the vehicle drives steadily forward.
-  3. Avoidance: Upon approaching a wall or object within 25cm, the robot halts, reverses briefly for
-     bumper clearance, executes an evasive spin turn, and resumes forward travel.
-  4. Deadlock Prevention: Alternating turn direction (`turnRightNext = !turnRightNext`) prevents corner trapping.
+  1. Startup Validation: Evaluates ultrasonic sensor health across 10 bounded retries before entering autonomous mode.
+  2. Cruise: Only drives forward when distance is actively verified greater than 25 cm.
+  3. Avoidance: Upon approaching a wall within 25cm, the robot halts, reverses, executes an evasive turn, and resumes.
+  4. Defensive Safety Stop: If the sensor is unplugged, unpowered, or times out, the robot stops immediately.
+  5. Deadlock Prevention: Alternating turn direction (`turnRightNext = !turnRightNext`) prevents corner trapping.
 
-  Sensor Limitations & Failure Handling:
-  - HC-SR04 physical blind zone is approximately 2cm to 3cm. Objects flush against the sensor can cause
-    echo timeouts (`pulseIn == 0`).
-  - Echo timeouts (distance = -1) in open space represent unobstructed paths (> 4.2m).
+  Sensor Failure & Blind-Zone Safety Rules:
+  - An echo timeout (`pulseIn == 0`) returns `-1` (UNKNOWN / SENSOR_TIMEOUT).
+  - UNKNOWN distance is NEVER treated as clear space. The robot halts to prevent unguided collisions.
 
   Author/Organization:
   National Institute of Electronics & Information Technology
@@ -112,6 +112,7 @@ bool turnRightNext = true;
 
 long readSinglePingCM();
 long readFilteredDistanceCM();
+bool validateSensorHealth();
 void moveForward(int speed);
 void moveBackward(int speed, int durationMs);
 void spinRight(int speed, int durationMs);
@@ -142,20 +143,24 @@ void setup() {
   Serial.println(F(" NIELIT Practical 3.8: Obstacle Avoiding Vehicle  "));
   Serial.println(F("=================================================="));
   Serial.println(F("[INFO] System initialized"));
-  Serial.print(F("[INFO] Safety Clearance Threshold: "));
+  Serial.print(F("[INFO] Safety Threshold: "));
   Serial.print(SAFE_DISTANCE_CM);
   Serial.println(F(" cm"));
+  Serial.println(F("[INFO] Executing deterministic sensor startup validation..."));
 
-  // Perform sensor connectivity self-check
-  long testDist = readFilteredDistanceCM();
-  if (testDist > 0) {
-    Serial.print(F("[INFO] Ultrasonic sensor online. Initial Distance: "));
-    Serial.print(testDist);
-    Serial.println(F(" cm"));
-  } else {
-    Serial.println(F("[WARN] Open field or echo timeout detected."));
+  // Deterministic sensor validation: Must obtain valid echo before entering autonomous mode
+  bool sensorReady = validateSensorHealth();
+
+  if (!sensorReady) {
+    Serial.println(F("[ERROR] Sensor validation FAILED. No echo received."));
+    Serial.println(F("[FATAL] Check HC-SR04 connections: VCC(5V), GND, TRIG(D9), ECHO(D10)."));
+    Serial.println(F("[HALT] Robot locked in safe stop. Autonomous mode aborted."));
+    while (true) {
+      stopRobot(1000); // Lock indefinitely in safe stop
+    }
   }
 
+  Serial.println(F("[INFO] Sensor validation PASSED. Ultrasonic transducer online."));
   Serial.println(F("[INFO] Starting autonomous navigation in 3s...\n"));
   delay(3000);
 }
@@ -165,20 +170,20 @@ void setup() {
 // =====================================================
 
 void loop() {
-  // 1. Measure Filtered Distance (Averaged 2 pings, returns -1 on timeout)
+  // 1. Measure Filtered Distance (Averaged pings, returns -1 on timeout)
   long distance = readFilteredDistanceCM();
 
-  Serial.print(F("[SENSOR] Distance: "));
+  Serial.print(F("[SENSOR] Measured Distance: "));
   if (distance == -1) {
-    Serial.println(F("Clear (>400cm / Timeout)"));
+    Serial.println(F("TIMEOUT / UNKNOWN"));
   } else {
     Serial.print(distance);
     Serial.println(F(" cm"));
   }
 
-  // 2. Navigation State Machine
-  // Condition 1: Path is unobstructed (Distance > 25cm or Open Field Timeout)
-  if (distance > SAFE_DISTANCE_CM || distance == -1) {
+  // 2. Defensive Navigation State Machine
+  // Condition 1: Path is confirmed clear by active sensor measurement
+  if (distance > SAFE_DISTANCE_CM) {
     moveForward(CRUISE_SPEED);
   }
   // Condition 2: Critical proximity (Impediment closer than 12cm)
@@ -213,13 +218,35 @@ void loop() {
     turnRightNext = !turnRightNext; // Alternate turn direction
     stopRobot(250);
   }
+  // Condition 4: Defensive Safety Stop on Sensor Timeout (-1) or Failure
+  else {
+    Serial.println(F("[SAFETY HALT] Sensor timeout or echo loss! Halting motors."));
+    stopRobot(100);
+  }
 
-  delay(40); // Navigation loop interval
+  delay(40); // Navigation loop sampling interval
 }
 
 // -------------------------------------------------------------
-// FILTERED ULTRASONIC DISTANCE SENSOR HELPERS
+// SENSOR VALIDATION & FILTERED MEASUREMENT HELPERS
 // -------------------------------------------------------------
+
+bool validateSensorHealth() {
+  // Perform up to 10 bounded ping attempts to confirm sensor responsiveness
+  for (int attempt = 1; attempt <= 10; attempt++) {
+    long d = readSinglePingCM();
+    if (d > 0 && d <= 400) {
+      Serial.print(F("[INFO] Echo detected on attempt "));
+      Serial.print(attempt);
+      Serial.print(F(": "));
+      Serial.print(d);
+      Serial.println(F(" cm"));
+      return true;
+    }
+    delay(100);
+  }
+  return false;
+}
 
 long readSinglePingCM() {
   digitalWrite(TRIG, LOW);

@@ -6,12 +6,12 @@
 
   Objective:
   Implement an autonomous closed-loop trajectory tracking system using dual infrared (IR)
-  reflectance sensors and smooth differential forward velocity steering.
+  reflectance sensors and smooth closed-loop discrete differential forward steering.
 
   Description:
   Demonstrates autonomous optical navigation over a contrasting line track (e.g. black electrical
   tape on white floor). Reads left and right digital IR reflectance sensor signals, evaluates
-  tracking deviation, and applies smooth differential forward velocity steering to maintain alignment.
+  tracking deviation, and applies closed-loop discrete differential forward velocity steering to maintain alignment.
 
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
@@ -176,7 +176,7 @@ void loop() {
   Serial.println(rightOnLine);
 
   // ---------------------------------------------------
-  // Smooth Differential Steering State Machine
+  // Closed-Loop Discrete Differential Steering State Machine
   // ---------------------------------------------------
   // State 00: Both sensors detect white floor (Robot centered straddling the line)
   if (!leftOnLine && !rightOnLine) {
@@ -201,7 +201,7 @@ void loop() {
 }
 
 // =====================================================
-// MOTOR CONTROL PRIMITIVES (Smooth Differential Drive)
+// MOTOR CONTROL PRIMITIVES (Closed-Loop Discrete Steering)
 // =====================================================
 
 void driveForward(int speed) {
@@ -214,7 +214,7 @@ void driveForward(int speed) {
 }
 
 void steerLeft() {
-  // Smooth differential steer left: Left motor slower, Right motor faster
+  // Discrete differential steer left: Left motor slower, Right motor faster
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
@@ -224,7 +224,7 @@ void steerLeft() {
 }
 
 void steerRight() {
-  // Smooth differential steer right: Left motor faster, Right motor slower
+  // Discrete differential steer right: Left motor faster, Right motor slower
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);

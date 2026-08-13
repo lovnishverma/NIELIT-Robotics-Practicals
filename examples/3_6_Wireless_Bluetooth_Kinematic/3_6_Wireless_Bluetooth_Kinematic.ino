@@ -16,7 +16,8 @@
 
   Hardware:
   - Arduino UNO R3 (or compatible AVR development board)
-  - HC-05 or HC-06 Bluetooth Serial Module (Default Baud: 9600)
+  - HC-05 or HC-06 Bluetooth Serial Breakout Board with onboard 3.3V LDO regulator (Default Baud: 9600)
+    *(Note: Standard 6-pin/4-pin breakout boards accept 5V on VCC; bare SMD modules require 3.3V VCC)*
   - L293D / L298N Dual H-Bridge Motor Driver
   - 2x DC Yellow BO Gear Motors (Nominal: 3V - 6V, 1:48 gear ratio)
   - 2WD Robotic Chassis with caster wheel
@@ -27,10 +28,10 @@
   -------------------------------------------------------------
   Module / Driver Pin      Arduino UNO Pin   Notes
   -------------------------------------------------------------
-  HC-05 VCC                5V                5V Regulated Supply
+  HC-05 VCC                5V                5V Regulated Supply (Onboard LDO converts to 3.3V)
   HC-05 GND                GND               Common Ground
-  HC-05 TXD                Pin 12 (RX)       SoftwareSerial Receive from Bluetooth
-  HC-05 RXD                Pin 13 (TX)       SoftwareSerial Transmit (via 3.3V divider)
+  HC-05 TXD                Pin 12 (RX)       SoftwareSerial Receive from Bluetooth (3.3V TTL out)
+  HC-05 RXD                Pin 13 (TX)       SoftwareSerial Transmit (via 1k/2k 3.3V divider)
   ENA                      Pin 5 (PWM)       Left Motor Speed Enable (Timer0)
   IN1                      Pin 2             Left Motor Direction Input 1
   IN2                      Pin 3             Left Motor Direction Input 2
@@ -42,7 +43,7 @@
   -------------------------------------------------------------
 
   Working Principle:
-  The Bluetooth module functions as a transparent wireless UART serial bridge at 9600 baud.
+  The Bluetooth breakout board functions as a transparent wireless UART serial bridge at 9600 baud.
   When the remote controller transmits single-byte ASCII characters, the Arduino reads them via
   `SoftwareSerial`, decodes the instruction, sets the motor state, and resets the watchdog timer.
   If no packet arrives within 1000ms while the vehicle is in motion, the communication watchdog
@@ -72,8 +73,9 @@
   4. Diagnostics are displayed on the Arduino Serial Monitor at 9600 baud.
 
   Electrical Safety Notes:
-  - The HC-05 RXD pin is rated for 3.3V logic. Connecting Arduino D13 (5V output) directly without
-    the 1k/2k resistor voltage divider may degrade or damage the Bluetooth baseband IC over time.
+  - Although the breakout board accepts 5V on VCC, the baseband transceiver operates internally at 3.3V logic.
+    Connecting Arduino D13 (5V output) directly without the 1k/2k resistor voltage divider may degrade
+    or damage the Bluetooth RX pin over time.
 
   Author/Organization:
   National Institute of Electronics & Information Technology
