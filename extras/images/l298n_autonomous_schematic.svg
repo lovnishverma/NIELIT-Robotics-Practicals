@@ -130,7 +130,7 @@
       <circle cx="35" cy="18" r="5" fill="#000000" stroke="#94a3b8" stroke-width="1.5"/><text x="35" y="34" fill="#94a3b8" font-size="10" font-weight="bold" text-anchor="middle">(−) GND</text>
     </g>
 
-    <!-- Side Text (Clear of all wires!) -->
+    <!-- Side Text -->
     <text x="238" y="34" fill="#fdf2f8" font-size="11" font-weight="bold" text-anchor="middle">2x 18650</text>
     <text x="238" y="48" fill="#fbcfe8" font-size="10" text-anchor="middle">7.4V Pack</text>
 
@@ -194,7 +194,7 @@
     </g>
   </g>
 
-  <!-- ================= 5. COMPLETE ELECTRICAL WIRING (100% Clean) ================= -->
+  <!-- ================= 5. COMPLETE ELECTRICAL WIRING (100% Fully Connected) ================= -->
 
   <!-- A. Logic Control Bus (Arduino -> L298N Header - enters cleanly from LEFT) -->
   <!-- D5 (ENA) -> L298N ENA (x=322, y=181) -->
@@ -232,11 +232,14 @@
   <circle cx="450" cy="393" r="4" fill="#000000"/>
   <circle cx="435" cy="271" r="4" fill="#94a3b8"/>
 
-  <!-- C. Common GND Wire (Enters Battery GND from below at x=450) -->
-  <path d="M 194 490 H 240 V 535 H 450 V 420" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="6,4"/>
+  <!-- C. Common GND Bus (Arduino GND -> Battery GND post -> Ultrasonic GND) -->
+  <path d="M 194 490 H 240 V 535 H 885 V 465" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="6,4"/>
   <circle cx="194" cy="490" r="3.5" fill="#94a3b8"/>
+  <circle cx="450" cy="535" r="4" fill="#94a3b8"/>
+  <path d="M 450 535 V 420" fill="none" stroke="#94a3b8" stroke-width="2.5" stroke-dasharray="6,4"/>
   <circle cx="450" cy="420" r="3.5" fill="#94a3b8"/>
-  <text x="345" y="528" fill="#94a3b8" font-size="10" font-weight="bold">Common GND Bus (Arduino GND to Battery GND)</text>
+  <circle cx="885" cy="465" r="3.5" fill="#94a3b8"/>
+  <text x="345" y="528" fill="#94a3b8" font-size="10" font-weight="bold">Common GND Bus (Arduino GND, Battery GND &amp; Sensor GND)</text>
 
   <!-- D. Sensor 3.7 Routing (Enters card from left edge below title) -->
   <!-- D2 -> Left IR OUT -->
@@ -249,7 +252,12 @@
   <circle cx="194" cy="160" r="3" fill="#34d399"/>
   <circle cx="825" cy="160" r="3" fill="#34d399"/>
 
-  <!-- E. Ultrasonic Sensor 3.8 Routing (Clean distinct entries from bottom) -->
+  <!-- E. Ultrasonic Sensor 3.8 Routing (ALL 4 PINS CONNECTED: VCC, TRIG, ECHO, GND) -->
+  <!-- 5V Power -> Ultrasonic VCC (x=695, y=465) -->
+  <path d="M 194 440 H 250 V 340 H 595 V 480 H 695 V 465" fill="none" stroke="#ef4444" stroke-width="2"/>
+  <circle cx="194" cy="440" r="3.5" fill="#ef4444"/>
+  <circle cx="695" cy="465" r="3.5" fill="#ef4444"/>
+
   <!-- D9 (TRIG) -> Ultrasonic TRIG (x=755, y=465) -->
   <path d="M 194 300 H 260 V 345 H 605 V 490 H 755 V 465" fill="none" stroke="#60a5fa" stroke-width="2"/>
   <circle cx="755" cy="465" r="3.5" fill="#60a5fa"/>
