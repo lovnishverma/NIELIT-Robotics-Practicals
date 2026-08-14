@@ -4,31 +4,32 @@
 
   Objective:
   Control your 2-wheel mobile robot wirelessly from an Android smartphone
-  using an HC-05 / HC-06 Bluetooth module and simple single-character commands.
+  using an HC-05 / HC-06 Bluetooth module and the L293D Motor Shield.
 
-  Bluetooth Wiring (HC-05 to Arduino UNO):
-  - VCC -> 5V
-  - GND -> GND
-  - TXD -> Pin 12 (RX)
-  - RXD -> Pin 13 (TX) via 1k/2k resistor voltage divider
+  Wiring on L293D Motor Shield:
+  - Left Motor  -> Screw Terminal M1
+  - Right Motor -> Screw Terminal M2
+  - Battery Pack -> EXT_PWR (+M and GND) on shield
+  - Bluetooth Module (HC-05):
+      * VCC -> 5V pin on shield
+      * GND -> GND pin on shield
+      * TXD -> Analog Pin A0 (SoftwareSerial RX)
+      * RXD -> Analog Pin A1 (SoftwareSerial TX, via 1k/2k resistor divider)
 
   Commands:
   'F' = Forward, 'B' = Backward, 'L' = Left, 'R' = Right, 'S' = Stop, '0'..'9' = Speed
 */
 
+#include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-// Bluetooth Serial Pins
-const int BT_RX_PIN = 12; // Arduino receives from HC-05 TXD
-const int BT_TX_PIN = 13; // Arduino transmits to HC-05 RXD
+// Connect Left Motor to M1, Right Motor to M2
+AF_DCMotor motorLeft(1);
+AF_DCMotor motorRight(2);
 
-// Motor Driver Pins
-const int PIN_ENA = 5;
-const int PIN_IN1 = 2;
-const int PIN_IN2 = 3;
-const int PIN_ENB = 6;
-const int PIN_IN3 = 4;
-const int PIN_IN4 = 7;
+// Bluetooth Serial Pins on the Shield's Analog Header
+const int BT_RX_PIN = A0; // Arduino receives from HC-05 TXD
+const int BT_TX_PIN = A1; // Arduino transmits to HC-05 RXD
 
 SoftwareSerial btSerial(BT_RX_PIN, BT_TX_PIN);
 
@@ -45,17 +46,11 @@ void setup() {
   Serial.begin(9600);    // Serial Monitor (USB)
   btSerial.begin(9600);  // Bluetooth Module
 
-  pinMode(PIN_ENA, OUTPUT);
-  pinMode(PIN_IN1, OUTPUT);
-  pinMode(PIN_IN2, OUTPUT);
-  pinMode(PIN_ENB, OUTPUT);
-  pinMode(PIN_IN3, OUTPUT);
-  pinMode(PIN_IN4, OUTPUT);
-
   stopRobot();
 
   Serial.println("NIELIT Robotics Practical 3.6");
-  Serial.println("Wireless Bluetooth Robot Control");
+  Serial.println("L293D Shield - Wireless Bluetooth Robot Control");
+  Serial.println("Connect HC-05 TXD to A0, RXD to A1.");
   Serial.println("Pair phone to HC-05 (Default PIN: 1234 or 0000).");
   Serial.println("Commands: F=Forward, B=Back, L=Left, R=Right, S=Stop, 0-9=Speed\n");
 }
@@ -131,63 +126,39 @@ void processCommand(char cmd) {
 // Movement Helper Functions
 
 void moveForward() {
-  int leftSpd  = constrain(currentSpeed + LEFT_TRIM, 0, 255);
-  int rightSpd = constrain(currentSpeed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, leftSpd);
-  analogWrite(PIN_ENB, rightSpd);
+  motorLeft.setSpeed(constrain(currentSpeed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(currentSpeed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(FORWARD);
   isMoving = true;
 }
 
 void moveBackward() {
-  int leftSpd  = constrain(currentSpeed + LEFT_TRIM, 0, 255);
-  int rightSpd = constrain(currentSpeed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, HIGH);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, HIGH);
-  analogWrite(PIN_ENA, leftSpd);
-  analogWrite(PIN_ENB, rightSpd);
+  motorLeft.setSpeed(constrain(currentSpeed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(currentSpeed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(BACKWARD);
+  motorRight.run(BACKWARD);
   isMoving = true;
 }
 
 void spinLeft() {
-  int leftSpd  = constrain(currentSpeed + LEFT_TRIM, 0, 255);
-  int rightSpd = constrain(currentSpeed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, HIGH);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, leftSpd);
-  analogWrite(PIN_ENB, rightSpd);
+  motorLeft.setSpeed(constrain(currentSpeed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(currentSpeed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(BACKWARD);
+  motorRight.run(FORWARD);
   isMoving = true;
 }
 
 void spinRight() {
-  int leftSpd  = constrain(currentSpeed + LEFT_TRIM, 0, 255);
-  int rightSpd = constrain(currentSpeed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, HIGH);
-  analogWrite(PIN_ENA, leftSpd);
-  analogWrite(PIN_ENB, rightSpd);
+  motorLeft.setSpeed(constrain(currentSpeed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(currentSpeed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(BACKWARD);
   isMoving = true;
 }
 
 void stopRobot() {
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, 0);
-  analogWrite(PIN_ENB, 0);
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
   isMoving = false;
 }

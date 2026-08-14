@@ -3,23 +3,20 @@
   Practical 3.4: Kinematic Maneuvers — 2-Wheel Robocar Basic Movements
 
   Objective:
-  Learn differential drive steering on a 2-wheel mobile robot
+  Learn differential drive steering on an L293D shield robot
   by executing fundamental motion patterns (Square navigation, Pivot turns, and Point spins).
 
-  Wiring (Arduino to L298N Motor Driver):
-  - Left Motor:   ENA -> Pin 5 (PWM), IN1 -> Pin 2, IN2 -> Pin 3
-  - Right Motor:  ENB -> Pin 6 (PWM), IN3 -> Pin 4, IN4 -> Pin 7
-  - Motor Power:  6V - 7.4V Battery Pack (+ to 12V/VM, - to GND)
-  - Common GND:   Arduino GND connected to Battery (-)
+  Hardware:
+  - Arduino UNO with Blue L293D Motor Shield
+  - Left Motor  -> M1
+  - Right Motor -> M2
+  - Battery Pack -> EXT_PWR (+M and GND)
 */
 
-// Pin Definitions
-const int PIN_ENA = 5;
-const int PIN_IN1 = 2;
-const int PIN_IN2 = 3;
-const int PIN_ENB = 6;
-const int PIN_IN3 = 4;
-const int PIN_IN4 = 7;
+#include <AFMotor.h>
+
+AF_DCMotor motorLeft(1);
+AF_DCMotor motorRight(2);
 
 // Speed and Timing Settings
 const int CRUISE_SPEED = 200; // Driving speed (0 - 255)
@@ -36,17 +33,10 @@ const int PAUSE_TIME_MS    = 500;  // Pause between maneuvers
 void setup() {
   Serial.begin(9600);
 
-  pinMode(PIN_ENA, OUTPUT);
-  pinMode(PIN_IN1, OUTPUT);
-  pinMode(PIN_IN2, OUTPUT);
-  pinMode(PIN_ENB, OUTPUT);
-  pinMode(PIN_IN3, OUTPUT);
-  pinMode(PIN_IN4, OUTPUT);
-
   stopRobot();
 
   Serial.println("NIELIT Robotics Practical 3.4");
-  Serial.println("Differential Drive Kinematic Maneuvers");
+  Serial.println("L293D Shield - Kinematic Navigation Maneuvers");
   Serial.println("Place robot on a flat open floor.");
   Serial.println("Starting in 3 seconds...\n");
   delay(3000);
@@ -95,92 +85,52 @@ void loop() {
 // Movement Helper Functions
 
 void moveForward(int speed, int durationMs) {
-  int actualLeft  = constrain(speed + LEFT_TRIM, 0, 255);
-  int actualRight = constrain(speed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, actualLeft);
-  analogWrite(PIN_ENB, actualRight);
-
+  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(FORWARD);
   delay(durationMs);
 }
 
 void moveBackward(int speed, int durationMs) {
-  int actualLeft  = constrain(speed + LEFT_TRIM, 0, 255);
-  int actualRight = constrain(speed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, HIGH);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, HIGH);
-  analogWrite(PIN_ENA, actualLeft);
-  analogWrite(PIN_ENB, actualRight);
-
+  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(BACKWARD);
+  motorRight.run(BACKWARD);
   delay(durationMs);
 }
 
 void pivotLeft(int speed, int durationMs) {
-  int actualRight = constrain(speed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, 0);
-  analogWrite(PIN_ENB, actualRight);
-
+  motorLeft.run(RELEASE);
+  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
+  motorRight.run(FORWARD);
   delay(durationMs);
 }
 
 void pivotRight(int speed, int durationMs) {
-  int actualLeft = constrain(speed + LEFT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, actualLeft);
-  analogWrite(PIN_ENB, 0);
-
+  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(RELEASE);
   delay(durationMs);
 }
 
 void spinLeft(int speed, int durationMs) {
-  int actualLeft  = constrain(speed + LEFT_TRIM, 0, 255);
-  int actualRight = constrain(speed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, HIGH);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, actualLeft);
-  analogWrite(PIN_ENB, actualRight);
-
+  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(BACKWARD);
+  motorRight.run(FORWARD);
   delay(durationMs);
 }
 
 void spinRight(int speed, int durationMs) {
-  int actualLeft  = constrain(speed + LEFT_TRIM, 0, 255);
-  int actualRight = constrain(speed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, HIGH);
-  analogWrite(PIN_ENA, actualLeft);
-  analogWrite(PIN_ENB, actualRight);
-
+  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(BACKWARD);
   delay(durationMs);
 }
 
 void stopRobot() {
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, 0);
-  analogWrite(PIN_ENB, 0);
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
 }

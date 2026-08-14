@@ -1,82 +1,66 @@
 /*
   NIELIT Robotics Practicals
-  Practical 3.2: Motor Driver H-Bridge Control (L293D / L298N)
+  Practical 3.2: Motor Driver Control — Interfacing the L293D Motor Driver Shield
 
   Objective:
-  Understand how an H-Bridge motor driver controls the direction and speed of a DC motor
-  using control inputs (Forward, Reverse, Active Brake, Coasting Stop, and PWM Speed).
+  Understand how the L293D Motor Shield controls a DC motor through
+  different states: Forward, Reverse, Release (Stop), and PWM Speed Control.
 
-  Wiring:
-  - ENA (Speed PWM) -> Pin 5
-  - IN1 (Direction 1) -> Pin 2
-  - IN2 (Direction 2) -> Pin 3
-  - Logic Power: 5V -> Arduino 5V, GND -> Arduino GND
-  - Motor Power: 6V - 7.4V Battery Pack (+ to 12V/VM, - to GND)
+  Hardware:
+  - Arduino UNO with Blue L293D Motor Driver Shield
+  - 1x DC Yellow BO Gear Motor -> Connected to Screw Terminal M1
+  - 6V - 7.4V Battery Pack -> Connected to EXT_PWR (+M and GND) on shield
 */
 
-// Pin Definitions
-const int PIN_ENA = 5; // Speed control (PWM 0-255)
-const int PIN_IN1 = 2; // Direction Pin 1
-const int PIN_IN2 = 3; // Direction Pin 2
+#include <AFMotor.h>
+
+// Connect DC Motor to screw terminal M1
+AF_DCMotor motor(1);
 
 void setup() {
   Serial.begin(9600);
 
-  pinMode(PIN_ENA, OUTPUT);
-  pinMode(PIN_IN1, OUTPUT);
-  pinMode(PIN_IN2, OUTPUT);
-
-  // Start with motor off
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  analogWrite(PIN_ENA, 0);
+  // Initialize motor in stopped state
+  motor.setSpeed(255);
+  motor.run(RELEASE);
 
   Serial.println("NIELIT Robotics Practical 3.2");
-  Serial.println("Motor Driver H-Bridge Control Demonstration");
+  Serial.println("L293D Motor Driver Shield Demonstration");
   Serial.println("Starting in 2 seconds...\n");
   delay(2000);
 }
 
 void loop() {
-  // State 1: Forward Rotation
-  Serial.println("[State 1] FORWARD (IN1 = HIGH, IN2 = LOW, ENA = 255)");
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  analogWrite(PIN_ENA, 255);
+  // State 1: Forward Rotation at Full Speed
+  Serial.println("[State 1] FORWARD at Full Speed (PWM = 255)");
+  motor.setSpeed(255);
+  motor.run(FORWARD);
   delay(3000);
 
-  // State 2: Active Brake
-  Serial.println("[State 2] ACTIVE BRAKE (IN1 = LOW, IN2 = LOW, ENA = 255)");
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  analogWrite(PIN_ENA, 255);
+  // State 2: Stop / Release
+  Serial.println("[State 2] STOP / RELEASE (Motor power disconnected)");
+  motor.run(RELEASE);
   delay(1500);
 
-  // State 3: Reverse Rotation
-  Serial.println("[State 3] REVERSE (IN1 = LOW, IN2 = HIGH, ENA = 255)");
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, HIGH);
-  analogWrite(PIN_ENA, 255);
+  // State 3: Reverse Rotation at Full Speed
+  Serial.println("[State 3] REVERSE at Full Speed (PWM = 255)");
+  motor.setSpeed(255);
+  motor.run(BACKWARD);
   delay(3000);
 
-  // State 4: Coasting Stop
-  Serial.println("[State 4] COASTING STOP (ENA = 0)");
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  analogWrite(PIN_ENA, 0);
-  delay(2000);
+  // State 4: Stop / Release
+  Serial.println("[State 4] STOP / RELEASE");
+  motor.run(RELEASE);
+  delay(1500);
 
-  // State 5: PWM Half Speed
-  Serial.println("[State 5] PWM SPEED CONTROL (Forward at 50% Speed: ENA = 128)");
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  analogWrite(PIN_ENA, 128);
+  // State 5: Speed Control (50% Half Speed)
+  Serial.println("[State 5] PWM SPEED CONTROL (Forward at 50% Speed: PWM = 128)");
+  motor.setSpeed(128);
+  motor.run(FORWARD);
   delay(3000);
 
   // Stop motor
-  analogWrite(PIN_ENA, 0);
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
+  motor.run(RELEASE);
 
   Serial.println("\nDemonstration complete. Repeating in 4 seconds...\n");
   delay(4000);

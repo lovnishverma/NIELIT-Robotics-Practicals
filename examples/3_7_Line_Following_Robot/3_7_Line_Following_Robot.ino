@@ -4,29 +4,26 @@
 
   Objective:
   Build an autonomous line-following robot using two TCRT5000 Infrared (IR)
-  sensors to track a black electrical tape line on a white floor.
+  sensors and the L293D Motor Shield.
 
-  Wiring:
-  - Left IR Sensor (OUT)  -> Pin 2 (Digital Input)
-  - Right IR Sensor (OUT) -> Pin 3 (Digital Input)
-  - Left Motor:   ENA -> Pin 5 (PWM), IN1 -> Pin 8, IN2 -> Pin 9
-  - Right Motor:  ENB -> Pin 6 (PWM), IN3 -> Pin 10, IN4 -> Pin 11
-  - Sensor Power: 5V -> Arduino 5V, GND -> Arduino GND
-  - Motor Power:  6V - 7.4V Battery Pack (+ to 12V/VM, - to GND)
+  Wiring on L293D Motor Shield:
+  - Left IR Sensor (OUT)  -> Analog Pin A0
+  - Right IR Sensor (OUT) -> Analog Pin A1
+  - Sensors VCC / GND     -> 5V / GND on the shield's analog breakout row
+  - Left Motor            -> Screw Terminal M1
+  - Right Motor           -> Screw Terminal M2
+  - Battery Pack          -> EXT_PWR (+M and GND) on shield
 */
 
-// IR Sensor Pins
-const int PIN_LEFT_SENSOR  = 2;
-const int PIN_RIGHT_SENSOR = 3;
+#include <AFMotor.h>
 
-// Motor Driver Pins
-const int PIN_ENA = 5;  // Left Speed (PWM)
-const int PIN_IN1 = 8;  // Left Direction 1
-const int PIN_IN2 = 9;  // Left Direction 2
+// Connect Left Motor to M1, Right Motor to M2
+AF_DCMotor motorLeft(1);
+AF_DCMotor motorRight(2);
 
-const int PIN_ENB = 6;  // Right Speed (PWM)
-const int PIN_IN3 = 10; // Right Direction 1
-const int PIN_IN4 = 11; // Right Direction 2
+// IR Sensor Pins (connected to Analog header on shield)
+const int PIN_LEFT_SENSOR  = A0;
+const int PIN_RIGHT_SENSOR = A1;
 
 // Speed Settings
 const int FORWARD_SPEED = 160; // Straight line speed
@@ -47,18 +44,11 @@ void setup() {
   pinMode(PIN_LEFT_SENSOR, INPUT);
   pinMode(PIN_RIGHT_SENSOR, INPUT);
 
-  // Configure motor pins
-  pinMode(PIN_ENA, OUTPUT);
-  pinMode(PIN_IN1, OUTPUT);
-  pinMode(PIN_IN2, OUTPUT);
-  pinMode(PIN_ENB, OUTPUT);
-  pinMode(PIN_IN3, OUTPUT);
-  pinMode(PIN_IN4, OUTPUT);
-
   stopRobot();
 
   Serial.println("NIELIT Robotics Practical 3.7");
-  Serial.println("Autonomous Line Following Robot");
+  Serial.println("L293D Shield - Autonomous Line Following Robot");
+  Serial.println("Connect Left IR to A0, Right IR to A1.");
   Serial.println("Calibrate sensors: LED turns ON over black tape.");
   Serial.println("Starting in 3 seconds...\n");
   delay(3000);
@@ -95,46 +85,27 @@ void loop() {
 // Motor Control Helper Functions
 
 void driveStraight(int speed) {
-  int leftSpd  = constrain(speed + LEFT_TRIM, 0, 255);
-  int rightSpd = constrain(speed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, leftSpd);
-  analogWrite(PIN_ENB, rightSpd);
+  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(FORWARD);
 }
 
 void steerLeft(int fastSpeed, int slowSpeed) {
-  int leftSpd  = constrain(slowSpeed + LEFT_TRIM, 0, 255);
-  int rightSpd = constrain(fastSpeed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, leftSpd);
-  analogWrite(PIN_ENB, rightSpd);
+  motorLeft.setSpeed(constrain(slowSpeed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(fastSpeed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(FORWARD);
 }
 
 void steerRight(int fastSpeed, int slowSpeed) {
-  int leftSpd  = constrain(fastSpeed + LEFT_TRIM, 0, 255);
-  int rightSpd = constrain(slowSpeed + RIGHT_TRIM, 0, 255);
-
-  digitalWrite(PIN_IN1, HIGH);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, HIGH);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, leftSpd);
-  analogWrite(PIN_ENB, rightSpd);
+  motorLeft.setSpeed(constrain(fastSpeed + LEFT_TRIM, 0, 255));
+  motorRight.setSpeed(constrain(slowSpeed + RIGHT_TRIM, 0, 255));
+  motorLeft.run(FORWARD);
+  motorRight.run(FORWARD);
 }
 
 void stopRobot() {
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, 0);
-  analogWrite(PIN_ENB, 0);
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
 }

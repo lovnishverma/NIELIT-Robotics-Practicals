@@ -3,25 +3,20 @@
   Practical 3.5: Speed Vector Regulation — PWM Motor Control
 
   Objective:
-  Control the speed of a 2-wheel mobile robot using Pulse Width Modulation (PWM),
-  test discrete speed presets, perform smooth acceleration/deceleration ramps,
-  and calibrate motor speed trim for straight driving.
+  Control the speed of a 2-wheel mobile robot on an L293D shield using PWM,
+  test discrete speed presets, and perform smooth acceleration/deceleration ramps.
 
-  Wiring (Arduino to L298N Motor Driver):
-  - Left Motor:   ENA -> Pin 5 (PWM), IN1 -> Pin 2, IN2 -> Pin 3
-  - Right Motor:  ENB -> Pin 6 (PWM), IN3 -> Pin 4, IN4 -> Pin 7
-  - Motor Power:  6V - 7.4V Battery Pack (+ to 12V/VM, - to GND)
-  - Common GND:   Arduino GND connected to Battery (-)
+  Hardware:
+  - Arduino UNO with Blue L293D Motor Shield
+  - Left Motor  -> M1
+  - Right Motor -> M2
+  - Battery Pack -> EXT_PWR (+M and GND)
 */
 
-// Pin Definitions
-const int PIN_ENA = 5; // Left Motor Speed (PWM)
-const int PIN_IN1 = 2; // Left Motor Direction 1
-const int PIN_IN2 = 3; // Left Motor Direction 2
+#include <AFMotor.h>
 
-const int PIN_ENB = 6; // Right Motor Speed (PWM)
-const int PIN_IN3 = 4; // Right Motor Direction 1
-const int PIN_IN4 = 7; // Right Motor Direction 2
+AF_DCMotor motorLeft(1);
+AF_DCMotor motorRight(2);
 
 // Motor Speed Trim (Adjust if robot veers right or left)
 const int LEFT_TRIM  = 0;
@@ -30,17 +25,10 @@ const int RIGHT_TRIM = 0;
 void setup() {
   Serial.begin(9600);
 
-  pinMode(PIN_ENA, OUTPUT);
-  pinMode(PIN_IN1, OUTPUT);
-  pinMode(PIN_IN2, OUTPUT);
-  pinMode(PIN_ENB, OUTPUT);
-  pinMode(PIN_IN3, OUTPUT);
-  pinMode(PIN_IN4, OUTPUT);
-
   stopRobot();
 
   Serial.println("NIELIT Robotics Practical 3.5");
-  Serial.println("PWM Speed Control & Acceleration Ramps");
+  Serial.println("L293D Shield - PWM Speed Control & Acceleration Ramps");
   Serial.println("Starting in 2 seconds...\n");
   delay(2000);
 }
@@ -116,27 +104,19 @@ void drive(bool forward, int speed) {
   int actualLeft  = constrain(speed + LEFT_TRIM, 0, 255);
   int actualRight = constrain(speed + RIGHT_TRIM, 0, 255);
 
-  if (forward) {
-    digitalWrite(PIN_IN1, HIGH);
-    digitalWrite(PIN_IN2, LOW);
-    digitalWrite(PIN_IN3, HIGH);
-    digitalWrite(PIN_IN4, LOW);
-  } else {
-    digitalWrite(PIN_IN1, LOW);
-    digitalWrite(PIN_IN2, HIGH);
-    digitalWrite(PIN_IN3, LOW);
-    digitalWrite(PIN_IN4, HIGH);
-  }
+  motorLeft.setSpeed(actualLeft);
+  motorRight.setSpeed(actualRight);
 
-  analogWrite(PIN_ENA, actualLeft);
-  analogWrite(PIN_ENB, actualRight);
+  if (forward) {
+    motorLeft.run(FORWARD);
+    motorRight.run(FORWARD);
+  } else {
+    motorLeft.run(BACKWARD);
+    motorRight.run(BACKWARD);
+  }
 }
 
 void stopRobot() {
-  digitalWrite(PIN_IN1, LOW);
-  digitalWrite(PIN_IN2, LOW);
-  digitalWrite(PIN_IN3, LOW);
-  digitalWrite(PIN_IN4, LOW);
-  analogWrite(PIN_ENA, 0);
-  analogWrite(PIN_ENB, 0);
+  motorLeft.run(RELEASE);
+  motorRight.run(RELEASE);
 }
