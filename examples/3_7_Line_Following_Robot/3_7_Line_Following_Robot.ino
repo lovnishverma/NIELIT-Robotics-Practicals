@@ -50,8 +50,6 @@
   =========================================================
 */
 
-#include <NIELIT_Robotics_Practicals.h>
-
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
@@ -116,7 +114,10 @@ void setup() {
 
   stopRobot();
 
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.7", "Autonomous Line Following Robot");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.7"));
+  Serial.println(F(" Autonomous Line Following Robot"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Calibrate sensor potentiometers: LED should turn ON over black tape."));
   Serial.println(F("[INFO] Place robot on black line track. Starting in 3 seconds...\n"));
   delay(3000);

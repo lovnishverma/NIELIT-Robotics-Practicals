@@ -39,8 +39,6 @@
   =========================================================
 */
 
-#include <NIELIT_Robotics_Practicals.h>
-
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
@@ -65,7 +63,10 @@ void setup() {
   digitalWrite(PIN_IN2, LOW);
   analogWrite(PIN_ENA, 0);
 
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.2", "Motor Driver H-Bridge Control");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.2"));
+  Serial.println(F(" Motor Driver H-Bridge Control"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Starting H-Bridge demonstration in 2 seconds...\n"));
   delay(2000);
 }

@@ -32,8 +32,6 @@
   =========================================================
 */
 
-#include <NIELIT_Robotics_Practicals.h>
-
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
@@ -89,7 +87,10 @@ void setup() {
 
   stopRobot();
 
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.4", "Differential Drive Kinematic Maneuvers");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.4"));
+  Serial.println(F(" Differential Drive Kinematic Maneuvers"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Place robot on an open, flat floor."));
   Serial.println(F("[INFO] Starting navigation maneuvers in 3 seconds...\n"));
   delay(3000);

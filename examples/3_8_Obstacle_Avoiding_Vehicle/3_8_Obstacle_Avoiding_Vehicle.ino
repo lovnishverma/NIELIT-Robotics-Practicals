@@ -43,8 +43,6 @@
   =========================================================
 */
 
-#include <NIELIT_Robotics_Practicals.h>
-
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
@@ -104,7 +102,10 @@ void setup() {
 
   stopRobot();
 
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.8", "Autonomous Obstacle-Avoiding Robot");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.8"));
+  Serial.println(F(" Autonomous Obstacle-Avoiding Robot"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Testing ultrasonic sensor..."));
 
   long initialDist = readDistanceCM();

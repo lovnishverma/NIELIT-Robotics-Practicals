@@ -43,8 +43,6 @@
   =========================================================
 */
 
-#include <NIELIT_Robotics_Practicals.h>
-
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
@@ -102,7 +100,10 @@ void setup() {
   stopMotors();
 
   // Print Welcome Banner
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.1", "Chassis Assembly & Power Pre-Flight Test");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.1"));
+  Serial.println(F(" Chassis Assembly & Power Pre-Flight Test"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Place car on a stand (wheels off table) for initial testing."));
   Serial.println(F("[INFO] Starting 3-second power countdown...\n"));
 

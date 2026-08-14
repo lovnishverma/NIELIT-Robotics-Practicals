@@ -34,8 +34,6 @@
   =========================================================
 */
 
-#include <NIELIT_Robotics_Practicals.h>
-
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
@@ -80,7 +78,10 @@ void setup() {
 
   stopRobot();
 
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.5", "PWM Speed Control & Acceleration Ramps");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.5"));
+  Serial.println(F(" PWM Speed Control & Acceleration Ramps"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Place car on a stand or clear open floor."));
   Serial.println(F("[INFO] Starting speed tests in 2 seconds...\n"));
   delay(2000);

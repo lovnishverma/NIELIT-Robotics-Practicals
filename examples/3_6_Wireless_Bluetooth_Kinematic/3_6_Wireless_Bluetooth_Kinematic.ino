@@ -49,7 +49,6 @@
 */
 
 #include <SoftwareSerial.h>
-#include <NIELIT_Robotics_Practicals.h>
 
 // =====================================================
 // PIN DEFINITIONS
@@ -110,7 +109,10 @@ void setup() {
 
   stopRobot();
 
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.6", "Wireless Bluetooth Robot Control");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.6"));
+  Serial.println(F(" Wireless Bluetooth Robot Control"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Pair your phone to 'HC-05' (Default PIN: 1234 or 0000)."));
   Serial.println(F("[INFO] Use any Bluetooth RC Car App or Bluetooth Serial Terminal."));
   Serial.println(F("[INFO] Commands: F=Forward, B=Back, L=Left, R=Right, S=Stop, 0-9=Speed\n"));

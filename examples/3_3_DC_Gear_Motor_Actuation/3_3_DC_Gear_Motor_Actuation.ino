@@ -29,8 +29,6 @@
   =========================================================
 */
 
-#include <NIELIT_Robotics_Practicals.h>
-
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
@@ -86,7 +84,10 @@ void setup() {
   // Safe startup: ensure motors are stopped
   stopMotors();
 
-  NIELIT::Robotics::printPracticalHeader(Serial, "3.3", "DC Gear Motor Actuation");
+  Serial.println(F("=================================================="));
+  Serial.println(F(" NIELIT Robotics Practical 3.3"));
+  Serial.println(F(" DC Gear Motor Actuation"));
+  Serial.println(F("=================================================="));
   Serial.println(F("[INFO] Starting dual-motor movement sequence in 2 seconds...\n"));
   delay(2000);
 }
