@@ -4,26 +4,28 @@
 
   Objective:
   Build an autonomous collision-avoiding robot using an HC-SR04 ultrasonic
-  distance sensor and the L293D Motor Shield.
+  distance sensor and an L298N Motor Driver Module.
 
-  Wiring on L293D Motor Shield:
-  - HC-SR04 TRIG  -> Analog Pin A0
-  - HC-SR04 ECHO  -> Analog Pin A1
-  - HC-SR04 Power -> 5V / GND on shield's analog breakout header
-  - Left Motor    -> Screw Terminal M1
-  - Right Motor   -> Screw Terminal M2
-  - Battery Pack  -> EXT_PWR (+M and GND) on shield
+  Wiring (HC-SR04 & L298N to Arduino UNO):
+  - HC-SR04:      VCC -> 5V, GND -> GND, TRIG -> Pin 9, ECHO -> Pin 10
+  - Left Motor:   ENA -> Pin 5 (PWM), IN1 -> Pin 2, IN2 -> Pin 3
+  - Right Motor:  ENB -> Pin 6 (PWM), IN3 -> Pin 4, IN4 -> Pin 7
+  - Motor Power:  6V - 7.4V Battery Pack (+ to 12V/VM, - to GND)
+  - Common GND:   Arduino GND connected to Battery (-)
 */
 
-#include <AFMotor.h>
+// Ultrasonic Sensor Pins
+const int PIN_TRIG = 9;
+const int PIN_ECHO = 10;
 
-// Connect Left Motor to M1, Right Motor to M2
-AF_DCMotor motorLeft(1);
-AF_DCMotor motorRight(2);
+// L298N Motor Driver Pins
+const int PIN_ENA = 5; // Left Motor Speed (PWM)
+const int PIN_IN1 = 2; // Left Motor Direction 1
+const int PIN_IN2 = 3; // Left Motor Direction 2
 
-// Ultrasonic Sensor Pins (connected to Analog header on shield)
-const int PIN_TRIG = A0;
-const int PIN_ECHO = A1;
+const int PIN_ENB = 6; // Right Motor Speed (PWM)
+const int PIN_IN3 = 4; // Right Motor Direction 1
+const int PIN_IN4 = 7; // Right Motor Direction 2
 
 // Distance and Speed Settings
 const int OBSTACLE_DISTANCE_CM = 25;  // Obstacle threshold in cm
@@ -41,11 +43,18 @@ void setup() {
   pinMode(PIN_TRIG, OUTPUT);
   pinMode(PIN_ECHO, INPUT);
 
+  // Configure L298N motor driver pins
+  pinMode(PIN_ENA, OUTPUT);
+  pinMode(PIN_IN1, OUTPUT);
+  pinMode(PIN_IN2, OUTPUT);
+  pinMode(PIN_ENB, OUTPUT);
+  pinMode(PIN_IN3, OUTPUT);
+  pinMode(PIN_IN4, OUTPUT);
+
   stopRobot();
 
   Serial.println("NIELIT Robotics Practical 3.8");
-  Serial.println("L293D Shield - Obstacle-Avoiding Robot");
-  Serial.println("Connect TRIG to A0, ECHO to A1.");
+  Serial.println("L298N Driver - Autonomous Obstacle-Avoiding Robot");
   Serial.println("Starting in 3 seconds...\n");
   delay(3000);
 }
@@ -109,36 +118,60 @@ long readDistanceCM() {
 // Motor Control Helper Functions
 
 void moveForward(int speed) {
-  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
-  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
-  motorLeft.run(FORWARD);
-  motorRight.run(FORWARD);
+  int leftSpd  = constrain(speed + LEFT_TRIM, 0, 255);
+  int rightSpd = constrain(speed + RIGHT_TRIM, 0, 255);
+
+  digitalWrite(PIN_IN1, HIGH);
+  digitalWrite(PIN_IN2, LOW);
+  digitalWrite(PIN_IN3, HIGH);
+  digitalWrite(PIN_IN4, LOW);
+  analogWrite(PIN_ENA, leftSpd);
+  analogWrite(PIN_ENB, rightSpd);
 }
 
 void moveBackward(int speed, int durationMs) {
-  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
-  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
-  motorLeft.run(BACKWARD);
-  motorRight.run(BACKWARD);
+  int leftSpd  = constrain(speed + LEFT_TRIM, 0, 255);
+  int rightSpd = constrain(speed + RIGHT_TRIM, 0, 255);
+
+  digitalWrite(PIN_IN1, LOW);
+  digitalWrite(PIN_IN2, HIGH);
+  digitalWrite(PIN_IN3, LOW);
+  digitalWrite(PIN_IN4, HIGH);
+  analogWrite(PIN_ENA, leftSpd);
+  analogWrite(PIN_ENB, rightSpd);
+
   delay(durationMs);
 }
 
 void spinTurn(int speed, int durationMs, bool turnRight) {
-  motorLeft.setSpeed(constrain(speed + LEFT_TRIM, 0, 255));
-  motorRight.setSpeed(constrain(speed + RIGHT_TRIM, 0, 255));
+  int leftSpd  = constrain(speed + LEFT_TRIM, 0, 255);
+  int rightSpd = constrain(speed + RIGHT_TRIM, 0, 255);
 
   if (turnRight) {
-    motorLeft.run(FORWARD);
-    motorRight.run(BACKWARD);
+    // Left Forward, Right Reverse
+    digitalWrite(PIN_IN1, HIGH);
+    digitalWrite(PIN_IN2, LOW);
+    digitalWrite(PIN_IN3, LOW);
+    digitalWrite(PIN_IN4, HIGH);
   } else {
-    motorLeft.run(BACKWARD);
-    motorRight.run(FORWARD);
+    // Left Reverse, Right Forward
+    digitalWrite(PIN_IN1, LOW);
+    digitalWrite(PIN_IN2, HIGH);
+    digitalWrite(PIN_IN3, HIGH);
+    digitalWrite(PIN_IN4, LOW);
   }
+
+  analogWrite(PIN_ENA, leftSpd);
+  analogWrite(PIN_ENB, rightSpd);
 
   delay(durationMs);
 }
 
 void stopRobot() {
-  motorLeft.run(RELEASE);
-  motorRight.run(RELEASE);
+  digitalWrite(PIN_IN1, LOW);
+  digitalWrite(PIN_IN2, LOW);
+  digitalWrite(PIN_IN3, LOW);
+  digitalWrite(PIN_IN4, LOW);
+  analogWrite(PIN_ENA, 0);
+  analogWrite(PIN_ENB, 0);
 }

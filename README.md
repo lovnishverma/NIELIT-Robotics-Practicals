@@ -2,57 +2,31 @@
 
 **Version:** `1.1.0`  
 **Target Architecture:** `avr` (Arduino UNO R3 / ATmega328P)  
-**Motor Driver:** Blue L293D Motor Driver Shield for Arduino  
 **Curriculum Body:** National Institute of Electronics & Information Technology (NIELIT Ropar)
 
-An educational Arduino library and practical curriculum repository packaging the **NIELIT Robotics Practical Programs (3.1 to 3.8)** configured for the popular **L293D Motor Driver Shield**.
+An educational Arduino library and practical curriculum repository packaging the **NIELIT Robotics Practical Programs (3.1 to 3.8)**.
 
 ---
 
-## 🛠 Hardware Setup (L293D Motor Shield)
+## 🛠 Hardware Driver Configuration
 
-Plug the blue **L293D Motor Driver Shield** directly on top of your Arduino UNO.
-
-```text
-               +-------------------------------------------+
-               |  [SERVOS]      ARDUINO UNO HEADERS        |
-               |  (9, 10)                                  |
-               |                                           |
-  Left Motor   | [o]                                   [o] | Right Motor
-  Terminal M1  | [o]      [IC1]       [IC2]            [o] | Terminal M2
-               | [o]      L293D       L293D            [o] |
-               | [o]                                   [o] |
-               | [o]             [IC3]                 [o] |
-               |                74HC595                    |
-               |                                           |
-               |  [+]  [-]      [PWR]       [ 5V GND A0-5] | Sensors Header
-               |  EXT_PWR       Jumper      Analog Row     | (A0, A1, A2...)
-               +---+----+---------------------+------------+
-                   |    |                     |
-                   |    +---------------------┴--> Battery (-) & Ground
-                   +-----------------------------> Battery (+) [6.0V - 7.4V]
-```
-
-### Motor & Power Connections:
-* **Left Motor:** Screw terminal **M1** (Top-Left)
-* **Right Motor:** Screw terminal **M2** (Top-Right)
-* **Battery Supply:** Screw terminal **EXT_PWR** (+M and GND) with **PWR Jumper ON**
-* **Sensors (IR, Ultrasonic, Bluetooth):** Connect to **A0** and **A1** on the shield's analog breakout row.
+* **Practicals 3.1 to 3.6:** Uses the **L293D Motor Driver Shield** plugged directly on top of the Arduino UNO.
+* **Practicals 3.7 & 3.8:** Uses the **L298N Motor Driver Module** connected via jumper wires for full digital pin access.
 
 ---
 
 ## 📑 Robotics Practicals Curriculum
 
-| Practical | Title & Focus | What You Will Learn |
+| Practical | Title & Focus | Hardware Setup |
 | :--- | :--- | :--- |
-| **3.1** | **Robotics Assembly & Power Dynamics** | 2WD chassis assembly, L293D shield wiring, and pre-flight rotation diagnostics on M1/M2. |
-| **3.2** | **Motor Driver Control (L293D Shield)** | How L293D controls motor states: Forward, Reverse, Stop/Release, and PWM Speed Control. |
-| **3.3** | **DC Gear Motor Actuation** | Independent control of dual BO motors for Forward, Reverse, Pivot turns, and Axial spins. |
-| **3.4** | **Kinematic Maneuvers — Differential Steering** | Executing a 4-sided square demonstration, wide curve pivot turns, and 360° point spins. |
-| **3.5** | **Speed Control via PWM & Smooth Ramps** | Regulating speed with PWM (0–255), speed presets, smooth acceleration ramps, and trim tuning. |
-| **3.6** | **Wireless Smartphone Bluetooth Control** | Wireless RC control via HC-05 on pins A0/A1 with 1.5s safety auto-stop. |
-| **3.7** | **Autonomous Line-Following Robot** | Closed-loop optical line tracking using dual TCRT5000 IR sensors on pins A0/A1. |
-| **3.8** | **Autonomous Obstacle-Avoiding Robot** | Collision avoidance using HC-SR04 ultrasonic distance sensor on pins A0/A1. |
+| **3.1** | **Robotics Assembly & Power Dynamics** | **L293D Shield:** Left motor on `M1`, Right motor on `M2`. Pre-flight test. |
+| **3.2** | **Motor Driver Control** | **L293D Shield:** Motor on `M1`. Forward, Reverse, Release, PWM speed. |
+| **3.3** | **DC Gear Motor Actuation** | **L293D Shield:** Forward, Reverse, Pivot turns, and In-place spins on `M1/M2`. |
+| **3.4** | **Kinematic Maneuvers — Differential Steering** | **L293D Shield:** 4-sided square demonstration and curve maneuvers. |
+| **3.5** | **Speed Control via PWM & Smooth Ramps** | **L293D Shield:** Speed presets (Slow, Med, Fast, Max) and smooth acceleration. |
+| **3.6** | **Wireless Smartphone Bluetooth Control** | **L293D Shield:** HC-05 on `A0` (RX) & `A1` (TX) with 1.5s safety auto-stop. |
+| **3.7** | **Autonomous Line-Following Robot** | **L298N Module:** Dual TCRT5000 IR sensors on pins `2` & `3`, motors on `5,8,9` & `6,10,11`. |
+| **3.8** | **Autonomous Obstacle-Avoiding Robot** | **L298N Module:** HC-SR04 ultrasonic on pins `9` & `10`, motors on `5,2,3` & `6,4,7`. |
 
 ---
 
@@ -68,17 +42,18 @@ Navigate to:
 
 ### Step 3 — Verify & Upload
 1. Click **Verify** (✔) and **Upload** (➔).
-2. Open **Serial Monitor** at **9600 baud** to view real-time diagnostics.
+2. Open **Serial Monitor** at **9600 baud** to view real-time telemetry.
 
 ---
 
-## 🛠 Hardware Bill of Materials (BOM)
+## 🔌 Wiring Quick Reference
 
-* **Microcontroller:** Arduino UNO R3
-* **Motor Driver:** Blue L293D Motor Driver Shield (with 2x L293D + 74HC595)
-* **Chassis Kit:** 2WD Smart Robot Car Kit (2 yellow BO gear motors + 1 ball caster wheel)
-* **Power Supply:** 2x 18650 Li-ion Batteries (7.4V) connected to `EXT_PWR`
-* **Sensors:**
-  * 2x TCRT5000 IR Reflective Sensors (Practical 3.7, on A0/A1)
-  * 1x HC-SR04 Ultrasonic Distance Sensor (Practical 3.8, on A0/A1)
-  * 1x HC-05 / HC-06 Bluetooth Module (Practical 3.6, on A0/A1)
+### 1. Practicals 3.1 – 3.6 (L293D Shield)
+* Left Motor $\rightarrow$ **M1**
+* Right Motor $\rightarrow$ **M2**
+* Battery $\rightarrow$ **EXT_PWR (+M and GND)**
+* Bluetooth (3.6) $\rightarrow$ **A0 (RX), A1 (TX)**
+
+### 2. Practicals 3.7 & 3.8 (L298N Module)
+* **Practical 3.7 (Line Follower):** Left IR on **Pin 2**, Right IR on **Pin 3**, Left Motor on **Pins 5,8,9**, Right Motor on **Pins 6,10,11**.
+* **Practical 3.8 (Obstacle Avoider):** Ultrasonic TRIG on **Pin 9**, ECHO on **Pin 10**, Left Motor on **Pins 5,2,3**, Right Motor on **Pins 6,4,7**.
