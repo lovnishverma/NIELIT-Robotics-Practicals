@@ -51,4 +51,4 @@ Arduino UNO 5V Rail                              Dedicated Battery Pack
 1. **Motor Voltage Scoping:** DC yellow BO motors are designed for 3V to 6V. With an L293D driver saturation drop of ~1.4V to 1.8V ($V_{CE,sat}$), a **6.0V to 7.4V** battery pack yields approximately 4.5V to 5.6V directly across the motor coils. Never connect 12V or 3S LiPo packs directly to 3V-rated BO motors.
 2. **Current Isolation:** Never draw DC motor power from the Arduino 5V header pin. Motor stall current (>800mA per motor) exceeds the current capacity of the onboard 5V linear regulator and will cause brownout resets.
 3. **Common Ground Bonding:** The negative terminal of the motor battery pack **MUST** connect directly to an Arduino `GND` pin to maintain a shared 0V reference for TTL control logic.
-4. **Bluetooth RX Level Shifting:** The HC-05 RXD pin is 3.3V logic tolerant. Always install the 1kΩ / 2kΩ resistor divider between Arduino D13 (TX) and HC-05 RXD.
+4. **Bluetooth RX Level Shifting:** The HC-05 RXD pin is 3.3V logic tolerant. Always install the 1kΩ / 2kΩ resistor divider between Arduino A1 (TX) and HC-05 RXD.
