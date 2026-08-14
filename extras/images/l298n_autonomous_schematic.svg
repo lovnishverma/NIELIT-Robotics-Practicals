@@ -239,11 +239,11 @@
   <circle cx="820" cy="160" r="3" fill="#34d399"/>
 
   <!-- E. Ultrasonic Sensor 3.8 Routing (Clean routing from Arduino D9 & D10) -->
-  <!-- D9 (TRIG) -> Ultrasonic TRIG -->
-  <path d="M 194 300 H 270 V 345 H 610 V 460 H 750" fill="none" stroke="#60a5fa" stroke-width="2"/>
-  <circle cx="750" cy="460" r="3.5" fill="#60a5fa"/>
+  <!-- D9 (TRIG) -> Ultrasonic TRIG (x=750, y=465) -->
+  <path d="M 194 300 H 270 V 345 H 610 V 465 H 750" fill="none" stroke="#60a5fa" stroke-width="2"/>
+  <circle cx="750" cy="465" r="3.5" fill="#60a5fa"/>
 
-  <!-- D10 (ECHO) -> Ultrasonic ECHO -->
-  <path d="M 194 330 H 280 V 355 H 620 V 460 H 820" fill="none" stroke="#a78bfa" stroke-width="2"/>
-  <circle cx="820" cy="460" r="3.5" fill="#a78bfa"/>
+  <!-- D10 (ECHO) -> Ultrasonic ECHO (x=820, y=465) -->
+  <path d="M 194 330 H 280 V 355 H 620 V 465 H 820" fill="none" stroke="#a78bfa" stroke-width="2"/>
+  <circle cx="820" cy="465" r="3.5" fill="#a78bfa"/>
 </svg>
