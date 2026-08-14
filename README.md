@@ -41,39 +41,17 @@ The curriculum utilizes a dedicated hardware architecture optimized for each edu
 | **3.7** | **Line Following Robot** | **L298N Module** | Left $\rightarrow$ `Pins 5, 8, 9`<br>Right $\rightarrow$ `Pins 6, 10, 11` | Left IR $\rightarrow$ `Pin 2`, Right IR $\rightarrow$ `Pin 3` |
 | **3.8** | **Obstacle Avoiding Robot** | **L298N Module** | Left $\rightarrow$ `Pins 5, 2, 3`<br>Right $\rightarrow$ `Pins 6, 4, 7` | HC-SR04 `TRIG` $\rightarrow$ `Pin 9`, `ECHO` $\rightarrow$ `Pin 10` |
 
-### Why This Dual-Driver Architecture?
-1. **Practicals 3.1 to 3.6 (L293D Shield):** The blue L293D shield plugs directly on top of the Arduino Uno, eliminating messy breadboard wiring for early motor control, kinematics, PWM ramping, and Bluetooth.
-2. **Practicals 3.7 & 3.8 (L298N Module):** Multi-sensor autonomous robotics (dual TCRT5000 IR lines and HC-SR04 ultrasound) requires direct access to high-speed hardware timer pins and digital GPIO lines. The standalone L298N module provides clear wire routing without shield pin limitations.
-
 ---
 
 ## 🚗 Mobile Robot Kinematics & Differential Drive Physics
 
+![2WD Differential Drive Chassis Kinematics](extras/images/2wd_chassis_kinematics.svg)
+
 ### 1. The 2-Wheel Differential Drive Architecture
-
 Unlike four-wheel Ackerman steering cars (which steer using a front mechanical rack-and-pinion), mobile robots use **Differential Drive Kinematics**:
-
-```text
-               CONFIGURATION A:                       CONFIGURATION B:
-            Caster Leading at FRONT                Caster Trailing at REAR
-        (Shopping Cart / Tricycle Style)       (Front-Wheel Drive / Tail-dragger)
-        ────────────────────────────────       ───────────────────────────────────
-                     ▲                                      ▲
-               [ FORWARD ]                            [ FORWARD ]
-                    │                                      │
-             ( BALL CASTER )                        [Left] ───┴─── [Right]
-                    │                                      │
-                    │                                      │
-             [Left] ───┴─── [Right]                 ( BALL CASTER )
-```
-
-### 2. Differential Drive Kinematic Equations
-Motion is governed by the relative velocities of the left wheel ($v_L$) and right wheel ($v_R$):
-
-$$\text{Linear Velocity: } v = \frac{v_R + v_L}{2}$$
-
-$$\text{Angular Velocity: } \omega = \frac{v_R - v_L}{L} \quad (\text{where } L \text{ is the wheelbase track width})$$
-
+* **Differential Drive Equations:**
+  $$\text{Linear Velocity: } v = \frac{v_R + v_L}{2}$$
+  $$\text{Angular Velocity: } \omega = \frac{v_R - v_L}{L} \quad (\text{where } L \text{ is the wheelbase track width})$$
 * **Straight Forward:** $v_L = +v, \; v_R = +v \implies \omega = 0$
 * **Straight Reverse:** $v_L = -v, \; v_R = -v \implies \omega = 0$
 * **Pivot Turn Left (Wide Curve):** $v_L = 0, \; v_R = +v \implies \text{Robot pivots around stationary left wheel}$
@@ -81,7 +59,7 @@ $$\text{Angular Velocity: } \omega = \frac{v_R - v_L}{L} \quad (\text{where } L 
 * **Point Spin Left (360° on the Spot):** $v_L = -v, \; v_R = +v \implies \text{Zero turning radius rotation around chassis center}$
 * **Point Spin Right (360° on the Spot):** $v_L = +v, \; v_R = -v \implies \text{Zero turning radius rotation around chassis center}$
 
-### 3. Demystifying the 3rd Wheel (The Ball Caster)
+### 2. Demystifying the 3rd Wheel (The Ball Caster)
 * **Why does the 3rd wheel have no motor?**  
   In a 2WD differential drive robot, steering is performed entirely by varying the speed and direction of the two yellow drive motors. The metal ball caster is a **passive, unpowered, omni-directional balance support** designed to keep the robot upright.
 * **Assembly Leveling Rule:** Ensure all three ground contact points (Left rubber tire, Right rubber tire, and Caster ball) touch the flat floor with equal pressure. If the caster standoff is too tall, the drive wheels float in the air and lose traction.
@@ -92,61 +70,31 @@ $$\text{Angular Velocity: } \omega = \frac{v_R - v_L}{L} \quad (\text{where } L 
 
 ### 1. L293D Motor Driver Shield (Practicals 3.1 to 3.6)
 
-```text
-               +-------------------------------------------+
-               |  [SERVOS]      ARDUINO UNO HEADERS        |
-               |  (9, 10)                                  |
-               |                                           |
-  Left Motor   | [o]                                   [o] | Right Motor
-  Terminal M1  | [o]      [IC1]       [IC2]            [o] | Terminal M2
-               | [o]      L293D       L293D            [o] |
-               | [o]                                   [o] |
-               | [o]             [IC3]                 [o] |
-               |                74HC595                    |
-               |                                           |
-               |  [+]  [-]      [PWR]       [ 5V GND A0-5] | Bluetooth Module
-               |  EXT_PWR       Jumper      Analog Row     | (A0 = RX, A1 = TX)
-               +---+----+---------------------+------------+
-                   |    |                     |
-                   |    +---------------------┴--> Battery Negative (-) & Common GND
-                   +-----------------------------> Battery Positive (+) [6.0V - 7.4V]
-```
+![L293D Motor Driver Shield Wiring](extras/images/l293d_shield_schematic.svg)
 
-#### Bluetooth HC-05 Resistor Voltage Divider (3.3V RX Protection):
-Arduino Pin A1 (5V TX) connects to HC-05 RXD via a 1kΩ / 2kΩ divider:
-
-$$\text{Arduino A1 (5V TX)} \xrightarrow{\quad 1\text{k}\Omega \quad} \text{HC-05 RXD} \xrightarrow{\quad 2\text{k}\Omega \quad} \text{GND}$$
+* **Left Motor:** Connected to blue screw terminal **M1** (Top-Left)
+* **Right Motor:** Connected to blue screw terminal **M2** (Top-Right)
+* **External Battery (6V–7.4V):** Connected to **EXT_PWR (+M and GND)** with the **PWR Jumper ON**
+* **Bluetooth HC-05 (Practical 3.6):**
+  * `HC-05 TXD` $\rightarrow$ **Analog Pin A0** (SoftwareSerial RX)
+  * `HC-05 RXD` $\rightarrow$ **Analog Pin A1** (SoftwareSerial TX, via 1kΩ / 2kΩ resistor divider to protect 3.3V logic)
+  * `HC-05 VCC/GND` $\rightarrow$ **5V / GND** on the shield's analog breakout row
 
 ---
 
 ### 2. L298N Dual H-Bridge Motor Driver Module (Practicals 3.7 & 3.8)
 
-```text
-               +-----------------------------+
-               |        L298N MODULE         |
-               |                             |
-  Left Motor   | [o]                     [o] | Right Motor
-  OUT1 & OUT2  | [o]                     [o] | OUT3 & OUT4
-               |                             |
-               |  [+]   [-]   [+5V]          |
-               |  12V   GND    5V            |
-               +---+-----+-----+-------------+
-                   |     |     |
-                   |     |     +-----> Arduino 5V
-                   |     +-----------> Arduino GND & Battery (-)
-                   +-----------------> Battery (+) [6.0V - 7.4V]
-```
+![L298N Driver Module & Autonomous Sensors Wiring](extras/images/l298n_autonomous_schematic.svg)
 
-#### Practical 3.7 (Line Following Pinout):
-* **Left TCRT5000 IR Sensor:** `OUT` $\rightarrow$ Arduino `Pin 2`
-* **Right TCRT5000 IR Sensor:** `OUT` $\rightarrow$ Arduino `Pin 3`
-* **L298N Left Motor:** `ENA` $\rightarrow$ `Pin 5` (PWM), `IN1` $\rightarrow$ `Pin 8`, `IN2` $\rightarrow$ `Pin 9`
-* **L298N Right Motor:** `ENB` $\rightarrow$ `Pin 6` (PWM), `IN3` $\rightarrow$ `Pin 10`, `IN4` $\rightarrow$ `Pin 11`
-
-#### Practical 3.8 (Obstacle Avoidance Pinout):
-* **HC-SR04 Ultrasonic Sensor:** `TRIG` $\rightarrow$ `Pin 9`, `ECHO` $\rightarrow$ `Pin 10`, `VCC` $\rightarrow$ `5V`, `GND` $\rightarrow$ `GND`
-* **L298N Left Motor:** `ENA` $\rightarrow$ `Pin 5` (PWM), `IN1` $\rightarrow$ `Pin 2`, `IN2` $\rightarrow$ `Pin 3`
-* **L298N Right Motor:** `ENB` $\rightarrow$ `Pin 6` (PWM), `IN3` $\rightarrow$ `Pin 4`, `IN4` $\rightarrow$ `Pin 7`
+* **Power Rails:** Battery (+) $\rightarrow$ `12V`, Battery (-) $\rightarrow$ `GND` (Shared with Arduino GND), Arduino 5V $\rightarrow$ `5V Logic`
+* **Practical 3.7 (Line Following):**
+  * Left TCRT5000 IR Sensor $\rightarrow$ **Pin 2**, Right TCRT5000 IR Sensor $\rightarrow$ **Pin 3**
+  * Left Motor $\rightarrow$ `ENA` (**Pin 5 PWM**), `IN1` (**Pin 8**), `IN2` (**Pin 9**)
+  * Right Motor $\rightarrow$ `ENB` (**Pin 6 PWM**), `IN3` (**Pin 10**), `IN4` (**Pin 11**)
+* **Practical 3.8 (Obstacle Avoidance):**
+  * HC-SR04 Ultrasonic Sensor $\rightarrow$ `TRIG` (**Pin 9**), `ECHO` (**Pin 10**), `VCC` (**5V**), `GND` (**GND**)
+  * Left Motor $\rightarrow$ `ENA` (**Pin 5 PWM**), `IN1` (**Pin 2**), `IN2` (**Pin 3**)
+  * Right Motor $\rightarrow$ `ENB` (**Pin 6 PWM**), `IN3` (**Pin 4**), `IN4` (**Pin 7**)
 
 ---
 
@@ -254,6 +202,10 @@ NIELIT-Robotics-Practicals/
 │   ├── 3_7_Line_Following_Robot/
 │   └── 3_8_Obstacle_Avoiding_Vehicle/
 └── extras/
+    ├── images/
+    │   ├── 2wd_chassis_kinematics.svg    # Vector kinematics schematic
+    │   ├── l293d_shield_schematic.svg    # L293D shield wiring diagram
+    │   └── l298n_autonomous_schematic.svg# L298N & sensors schematic
     ├── Hardware_BOM.md                 # Detailed component list
     ├── Pinouts_and_Wiring_Guide.md     # Comprehensive pinout schematics
     └── Validation_Matrix.md            # Hardware & verification checklist

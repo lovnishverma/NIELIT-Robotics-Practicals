@@ -13,60 +13,34 @@ A complete beginner-friendly hardware and wiring reference for the **NIELIT Robo
 
 ---
 
-## 2. Configuration for Practicals 3.1 – 3.6 (L293D Motor Shield)
+## 2. 2-Wheel Differential Drive Robot Architecture
 
-Plug the blue **L293D Motor Driver Shield** directly on top of your Arduino UNO.
-
-```text
-               +-------------------------------------------+
-               |  [SERVOS]      ARDUINO UNO HEADERS        |
-               |  (9, 10)                                  |
-               |                                           |
-  Left Motor   | [o]                                   [o] | Right Motor
-  Terminal M1  | [o]      [IC1]       [IC2]            [o] | Terminal M2
-               | [o]      L293D       L293D            [o] |
-               | [o]                                   [o] |
-               | [o]             [IC3]                 [o] |
-               |                74HC595                    |
-               |                                           |
-               |  [+]  [-]      [PWR]       [ 5V GND A0-5] | Bluetooth Module
-               |  EXT_PWR       Jumper      Analog Row     | (A0 = RX, A1 = TX)
-               +---+----+---------------------+------------+
-                   |    |                     |
-                   |    +---------------------┴--> Battery (-) & Ground
-                   +-----------------------------> Battery (+) [6.0V - 7.4V]
-```
-
-### Motor & Bluetooth Connections (3.1 to 3.6):
-* **Left Motor:** Connected to blue screw terminal **M1**
-* **Right Motor:** Connected to blue screw terminal **M2**
-* **Battery Power:** Connected to **EXT_PWR (+M and GND)** with **PWR Jumper ON**
-* **Bluetooth (Practical 3.6):**
-  * `HC-05 TXD` -> **Analog Pin A0** (SoftwareSerial RX)
-  * `HC-05 RXD` -> **Analog Pin A1** (SoftwareSerial TX, via 1k/2k resistor divider)
-  * `HC-05 VCC/GND` -> **5V / GND** on the shield's analog breakout row
+![2WD Differential Drive Chassis Kinematics](images/2wd_chassis_kinematics.svg)
 
 ---
 
-## 3. Configuration for Practicals 3.7 & 3.8 (L298N Driver Module)
+## 3. Configuration for Practicals 3.1 – 3.6 (L293D Motor Shield)
+
+Plug the blue **L293D Motor Driver Shield** directly on top of your Arduino UNO.
+
+![L293D Motor Driver Shield Wiring](images/l293d_shield_schematic.svg)
+
+### Motor & Bluetooth Connections (3.1 to 3.6):
+* **Left Motor:** Connected to blue screw terminal **M1** (Top-Left)
+* **Right Motor:** Connected to blue screw terminal **M2** (Top-Right)
+* **Battery Power (6V - 7.4V):** Connected to **EXT_PWR (+M and GND)** with **PWR Jumper ON**
+* **Bluetooth (Practical 3.6):**
+  * `HC-05 TXD` $\rightarrow$ **Analog Pin A0** (SoftwareSerial RX)
+  * `HC-05 RXD` $\rightarrow$ **Analog Pin A1** (SoftwareSerial TX, via 1k/2k resistor divider to protect 3.3V logic)
+  * `HC-05 VCC/GND` $\rightarrow$ **5V / GND** on the shield's analog breakout row
+
+---
+
+## 4. Configuration for Practicals 3.7 & 3.8 (L298N Driver Module)
 
 Connect the **L298N Motor Driver Module** to Arduino UNO using jumper wires:
 
-```text
-               +-----------------------------+
-               |        L298N MODULE         |
-               |                             |
-  Left Motor   | [o]                     [o] | Right Motor
-  OUT1 & OUT2  | [o]                     [o] | OUT3 & OUT4
-               |                             |
-               |  [+]   [-]   [+5V]          |
-               |  12V   GND    5V            |
-               +---+-----+-----+-------------+
-                   |     |     |
-                   |     |     +-----> Arduino 5V
-                   |     +-----------> Arduino GND & Battery (-)
-                   +-----------------> Battery (+) [6.0V - 7.4V]
-```
+![L298N Driver Module & Autonomous Sensors Wiring](images/l298n_autonomous_schematic.svg)
 
 ### Practical 3.7: Line Following Robot Wiring
 ```text
