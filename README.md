@@ -8,25 +8,18 @@ An educational Arduino library and practical curriculum repository packaging the
 
 ---
 
-## 🛠 Hardware Driver Configuration
+## 🛠 Hardware Allocation
 
-* **Practicals 3.1 to 3.6:** Uses the **L293D Motor Driver Shield** plugged directly on top of the Arduino UNO.
-* **Practicals 3.7 & 3.8:** Uses the **L298N Motor Driver Module** connected via jumper wires for full digital pin access.
-
----
-
-## 📑 Robotics Practicals Curriculum
-
-| Practical | Title & Focus | Hardware Setup |
-| :--- | :--- | :--- |
-| **3.1** | **Robotics Assembly & Power Dynamics** | **L293D Shield:** Left motor on `M1`, Right motor on `M2`. Pre-flight test. |
-| **3.2** | **Motor Driver Control** | **L293D Shield:** Motor on `M1`. Forward, Reverse, Release, PWM speed. |
-| **3.3** | **DC Gear Motor Actuation** | **L293D Shield:** Forward, Reverse, Pivot turns, and In-place spins on `M1/M2`. |
-| **3.4** | **Kinematic Maneuvers — Differential Steering** | **L293D Shield:** 4-sided square demonstration and curve maneuvers. |
-| **3.5** | **Speed Control via PWM & Smooth Ramps** | **L293D Shield:** Speed presets (Slow, Med, Fast, Max) and smooth acceleration. |
-| **3.6** | **Wireless Smartphone Bluetooth Control** | **L293D Shield:** HC-05 on `A0` (RX) & `A1` (TX) with 1.5s safety auto-stop. |
-| **3.7** | **Autonomous Line-Following Robot** | **L298N Module:** Dual TCRT5000 IR sensors on pins `2` & `3`, motors on `5,8,9` & `6,10,11`. |
-| **3.8** | **Autonomous Obstacle-Avoiding Robot** | **L298N Module:** HC-SR04 ultrasonic on pins `9` & `10`, motors on `5,2,3` & `6,4,7`. |
+| Practical | Topic | Motor Driver Used | Connections |
+| :--- | :--- | :--- | :--- |
+| **3.1** | **Assembly & Pre-Flight** | **L293D Motor Shield** | Left Motor on `M1`, Right Motor on `M2` |
+| **3.2** | **Driver H-Bridge Control** | **L293D Motor Shield** | Motor on `M1` (Forward, Reverse, Release, PWM) |
+| **3.3** | **DC Gear Motors** | **L293D Motor Shield** | Dual BO Motors on `M1` & `M2` |
+| **3.4** | **Kinematic Maneuvers** | **L293D Motor Shield** | Square path, Pivot curves, and Point spins on `M1` & `M2` |
+| **3.5** | **PWM Speed Control** | **L293D Motor Shield** | Speed presets and smooth acceleration ramps on `M1` & `M2` |
+| **3.6** | **Bluetooth Remote Control** | **L293D Motor Shield** | Motors on `M1` & `M2`, HC-05 on `A0` (RX) & `A1` (TX) |
+| **3.7** | **Line Following Robot** | **L298N Module** | Left IR $\rightarrow$ Pin 2, Right IR $\rightarrow$ Pin 3<br>Left Motor $\rightarrow$ Pins 5, 8, 9, Right Motor $\rightarrow$ Pins 6, 10, 11 |
+| **3.8** | **Obstacle Avoiding Robot** | **L298N Module** | HC-SR04 TRIG $\rightarrow$ Pin 9, ECHO $\rightarrow$ Pin 10<br>Left Motor $\rightarrow$ Pins 5, 2, 3, Right Motor $\rightarrow$ Pins 6, 4, 7 |
 
 ---
 
@@ -55,5 +48,5 @@ Navigate to:
 * Bluetooth (3.6) $\rightarrow$ **A0 (RX), A1 (TX)**
 
 ### 2. Practicals 3.7 & 3.8 (L298N Module)
-* **Practical 3.7 (Line Follower):** Left IR on **Pin 2**, Right IR on **Pin 3**, Left Motor on **Pins 5,8,9**, Right Motor on **Pins 6,10,11**.
-* **Practical 3.8 (Obstacle Avoider):** Ultrasonic TRIG on **Pin 9**, ECHO on **Pin 10**, Left Motor on **Pins 5,2,3**, Right Motor on **Pins 6,4,7**.
+* **Practical 3.7 (Line Follower):** Left IR on **Pin 2**, Right IR on **Pin 3**, Left Motor on **Pins 5, 8, 9**, Right Motor on **Pins 6, 10, 11**.
+* **Practical 3.8 (Obstacle Avoider):** Ultrasonic TRIG on **Pin 9**, ECHO on **Pin 10**, Left Motor on **Pins 5, 2, 3**, Right Motor on **Pins 6, 4, 7**.
