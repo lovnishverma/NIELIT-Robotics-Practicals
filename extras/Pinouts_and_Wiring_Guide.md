@@ -27,7 +27,7 @@ Plug the blue **L293D Motor Driver Shield** directly on top of your Arduino UNO.
 
 ### Motor & Bluetooth Connections (3.1 to 3.6):
 * **Left Motor:** Connected to blue screw terminal **M1** (Top-Left)
-* **Right Motor:** Connected to blue screw terminal **M2** (Top-Right)
+* **Right Motor:** Connected to blue screw terminal **M2** (Bottom-Left)
 * **Battery Power (6V - 7.4V):** Connected to **EXT_PWR (+M and GND)** with **PWR Jumper ON**
 * **Bluetooth (Practical 3.6):**
   * `HC-05 TXD` $\rightarrow$ **Analog Pin A0** (SoftwareSerial RX)
