@@ -50,7 +50,7 @@
     <g transform="translate(27, 120)">
       <line x1="0" y1="0" x2="0" y2="-45" stroke="#22c55e" stroke-width="3.5"/>
       <polygon points="0,-58 -6,-43 6,-43" fill="#22c55e"/>
-      <text x="0" y="-66" fill="#22c55e" font-size="14" font-weight="bold" text-anchor="middle">v_L</text>
+      <text x="0" y="-66" fill="#22c55e" font-size="14" font-weight="bold" text-anchor="middle">v<tspan font-size="10" baseline-shift="sub">L</tspan></text>
     </g>
 
     <!-- RIGHT MOTOR & WHEEL (Centered at Y=175) -->
@@ -64,7 +64,7 @@
     <g transform="translate(293, 120)">
       <line x1="0" y1="0" x2="0" y2="-45" stroke="#22c55e" stroke-width="3.5"/>
       <polygon points="0,-58 -6,-43 6,-43" fill="#22c55e"/>
-      <text x="0" y="-66" fill="#22c55e" font-size="14" font-weight="bold" text-anchor="middle">v_R</text>
+      <text x="0" y="-66" fill="#22c55e" font-size="14" font-weight="bold" text-anchor="middle">v<tspan font-size="10" baseline-shift="sub">R</tspan></text>
     </g>
 
     <!-- Arduino UNO Board on top -->
@@ -88,7 +88,7 @@
 
   <!-- RIGHT: Mathematical Formulas & Steering Dynamics -->
   <g transform="translate(460, 75)">
-    <!-- Box 1: Kinematic Formulas (Clean Fraction Architecture) -->
+    <!-- Box 1: Kinematic Formulas (Subscript Fraction Architecture) -->
     <rect x="0" y="0" width="420" height="135" rx="10" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5"/>
     <text x="20" y="26" fill="#60a5fa" font-size="14" font-weight="bold">Kinematic Velocity Equations</text>
     
@@ -98,8 +98,10 @@
       <text x="0" y="24" fill="#f8fafc" font-size="13" font-weight="bold">Linear Velocity (v)  =</text>
       <!-- Fraction -->
       <g transform="translate(155, 0)">
-        <!-- Numerator -->
-        <text x="45" y="14" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">v_R + v_L</text>
+        <!-- Numerator with proper Subscripts vR + vL -->
+        <text x="45" y="14" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">
+          v<tspan font-size="10" baseline-shift="sub">R</tspan> + v<tspan font-size="10" baseline-shift="sub">L</tspan>
+        </text>
         <!-- Fraction Bar -->
         <line x1="0" y1="20" x2="90" y2="20" stroke="#38bdf8" stroke-width="2"/>
         <!-- Denominator -->
@@ -113,8 +115,10 @@
       <text x="0" y="24" fill="#f8fafc" font-size="13" font-weight="bold">Angular Velocity (ω)  =</text>
       <!-- Fraction -->
       <g transform="translate(165, 0)">
-        <!-- Numerator -->
-        <text x="45" y="14" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">v_R − v_L</text>
+        <!-- Numerator with proper Subscripts vR − vL -->
+        <text x="45" y="14" fill="#38bdf8" font-size="13" font-weight="bold" text-anchor="middle">
+          v<tspan font-size="10" baseline-shift="sub">R</tspan> − v<tspan font-size="10" baseline-shift="sub">L</tspan>
+        </text>
         <!-- Fraction Bar -->
         <line x1="0" y1="20" x2="90" y2="20" stroke="#38bdf8" stroke-width="2"/>
         <!-- Denominator -->
@@ -130,32 +134,32 @@
     <g transform="translate(20, 202)" font-size="12" fill="#e2e8f0">
       <!-- Row 1: Forward -->
       <text x="0" y="0" fill="#fbbf24" font-weight="bold">Forward Drive:</text>
-      <text x="145" y="0" fill="#38bdf8">v_L = +v,  v_R = +v</text>
+      <text x="145" y="0" fill="#38bdf8">v<tspan font-size="9" baseline-shift="sub">L</tspan> = +v,  v<tspan font-size="9" baseline-shift="sub">R</tspan> = +v</text>
       <text x="300" y="0" fill="#94a3b8">(ω = 0)</text>
 
       <!-- Row 2: Reverse -->
       <text x="0" y="25" fill="#fbbf24" font-weight="bold">Reverse Drive:</text>
-      <text x="145" y="25" fill="#38bdf8">v_L = −v,  v_R = −v</text>
+      <text x="145" y="25" fill="#38bdf8">v<tspan font-size="9" baseline-shift="sub">L</tspan> = −v,  v<tspan font-size="9" baseline-shift="sub">R</tspan> = −v</text>
       <text x="300" y="25" fill="#94a3b8">(ω = 0)</text>
 
       <!-- Row 3: Pivot Left -->
       <text x="0" y="50" fill="#fbbf24" font-weight="bold">Pivot Left Turn:</text>
-      <text x="145" y="50" fill="#38bdf8">v_L = 0,   v_R = +v</text>
+      <text x="145" y="50" fill="#38bdf8">v<tspan font-size="9" baseline-shift="sub">L</tspan> = 0,   v<tspan font-size="9" baseline-shift="sub">R</tspan> = +v</text>
       <text x="300" y="50" fill="#94a3b8">(Wide curve)</text>
 
       <!-- Row 4: Pivot Right -->
       <text x="0" y="75" fill="#fbbf24" font-weight="bold">Pivot Right Turn:</text>
-      <text x="145" y="75" fill="#38bdf8">v_L = +v,  v_R = 0</text>
+      <text x="145" y="75" fill="#38bdf8">v<tspan font-size="9" baseline-shift="sub">L</tspan> = +v,  v<tspan font-size="9" baseline-shift="sub">R</tspan> = 0</text>
       <text x="300" y="75" fill="#94a3b8">(Wide curve)</text>
 
       <!-- Row 5: Point Spin Left -->
       <text x="0" y="100" fill="#fbbf24" font-weight="bold">Point Spin Left:</text>
-      <text x="145" y="100" fill="#38bdf8">v_L = −v,  v_R = +v</text>
+      <text x="145" y="100" fill="#38bdf8">v<tspan font-size="9" baseline-shift="sub">L</tspan> = −v,  v<tspan font-size="9" baseline-shift="sub">R</tspan> = +v</text>
       <text x="300" y="100" fill="#94a3b8">(360° on spot)</text>
 
       <!-- Row 6: Point Spin Right -->
       <text x="0" y="125" fill="#fbbf24" font-weight="bold">Point Spin Right:</text>
-      <text x="145" y="125" fill="#38bdf8">v_L = +v,  v_R = −v</text>
+      <text x="145" y="125" fill="#38bdf8">v<tspan font-size="9" baseline-shift="sub">L</tspan> = +v,  v<tspan font-size="9" baseline-shift="sub">R</tspan> = −v</text>
       <text x="300" y="125" fill="#94a3b8">(360° on spot)</text>
     </g>
 
