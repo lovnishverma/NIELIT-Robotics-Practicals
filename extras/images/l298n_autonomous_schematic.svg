@@ -1,99 +1,171 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 840 540" width="100%" height="100%" style="background:#0f172a;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 560" width="100%" height="100%" style="background:#0b1120;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <defs>
-    <linearGradient id="l298nGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#b91c1c"/>
-      <stop offset="100%" stop-color="#7f1d1d"/>
-    </linearGradient>
-    <linearGradient id="unoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="unoBlue" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0284c7"/>
       <stop offset="100%" stop-color="#0369a1"/>
     </linearGradient>
-    <linearGradient id="sensorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="l298nRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b91c1c"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#1e293b"/>
-      <stop offset="100%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
   </defs>
 
-  <!-- Title -->
-  <text x="420" y="32" fill="#f8fafc" font-size="20" font-weight="bold" text-anchor="middle">L298N Driver Module &amp; Autonomous Sensors Wiring</text>
-  <text x="420" y="52" fill="#94a3b8" font-size="13" text-anchor="middle">Practicals 3.7 (TCRT5000 Line Following) &amp; 3.8 (HC-SR04 Obstacle Avoidance)</text>
+  <!-- Header -->
+  <text x="470" y="30" fill="#f8fafc" font-size="20" font-weight="bold" text-anchor="middle">L298N Driver Module &amp; Autonomous Navigation Wiring</text>
+  <text x="470" y="48" fill="#94a3b8" font-size="12" text-anchor="middle">Practicals 3.7 (Dual TCRT5000 IR Line Following) &amp; 3.8 (HC-SR04 Obstacle Avoidance)</text>
 
-  <!-- ARDUINO UNO R3 -->
-  <g transform="translate(40, 85)">
-    <rect x="0" y="0" width="220" height="380" rx="12" fill="url(#unoGrad)" stroke="#38bdf8" stroke-width="2"/>
-    <text x="110" y="30" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">ARDUINO UNO R3</text>
+  <!-- 1. ARDUINO UNO R3 (Left) -->
+  <g transform="translate(30, 70)">
+    <rect x="0" y="0" width="200" height="450" rx="14" fill="url(#unoBlue)" stroke="#38bdf8" stroke-width="2"/>
+    <text x="100" y="28" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">ARDUINO UNO R3</text>
     
-    <!-- Digital Header -->
-    <rect x="180" y="50" width="30" height="310" rx="4" fill="#0f172a"/>
-    <text x="165" y="75" fill="#f8fafc" font-size="10" text-anchor="end">Pin 2 (Left IR)</text>
-    <text x="165" y="100" fill="#f8fafc" font-size="10" text-anchor="end">Pin 3 (Right IR)</text>
-    <text x="165" y="130" fill="#fbbf24" font-size="10" text-anchor="end">Pin 5 (ENA PWM)</text>
-    <text x="165" y="155" fill="#fbbf24" font-size="10" text-anchor="end">Pin 6 (ENB PWM)</text>
-    <text x="165" y="185" fill="#38bdf8" font-size="10" text-anchor="end">Pin 8 / 2 (IN1)</text>
-    <text x="165" y="210" fill="#38bdf8" font-size="10" text-anchor="end">Pin 9 / 3 (IN2/TRIG)</text>
-    <text x="165" y="235" fill="#38bdf8" font-size="10" text-anchor="end">Pin 10 / 4 (IN3/ECHO)</text>
-    <text x="165" y="260" fill="#38bdf8" font-size="10" text-anchor="end">Pin 11 / 7 (IN4)</text>
-    <text x="165" y="295" fill="#ef4444" font-size="10" text-anchor="end">5V (Logic)</text>
-    <text x="165" y="325" fill="#94a3b8" font-size="10" text-anchor="end">GND (Common)</text>
-  </g>
-
-  <!-- L298N MOTOR DRIVER MODULE -->
-  <g transform="translate(320, 85)">
-    <rect x="0" y="0" width="220" height="240" rx="12" fill="url(#l298nGrad)" stroke="#f87171" stroke-width="2"/>
-    <text x="110" y="28" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">L298N DRIVER</text>
+    <!-- Digital Header Row (Right Edge of Uno) -->
+    <rect x="155" y="45" width="40" height="385" rx="5" fill="#0f172a" stroke="#64748b" stroke-width="1"/>
     
-    <!-- Heatsink in middle -->
-    <rect x="75" y="45" width="70" height="50" rx="4" fill="#374151" stroke="#4b5563" stroke-width="1"/>
-    <text x="110" y="75" fill="#9ca3af" font-size="9" text-anchor="middle">L298N IC</text>
-
-    <!-- Motor Screw Terminals -->
-    <rect x="5" y="55" width="20" height="40" rx="3" fill="#1e293b"/>
-    <text x="15" y="45" fill="#fbbf24" font-size="9" text-anchor="middle">OUT1/2</text>
-    <rect x="195" y="55" width="20" height="40" rx="3" fill="#1e293b"/>
-    <text x="205" y="45" fill="#fbbf24" font-size="9" text-anchor="middle">OUT3/4</text>
-
-    <!-- Logic Pins Row -->
-    <rect x="25" y="175" width="170" height="45" rx="4" fill="#0f172a"/>
-    <text x="110" y="195" fill="#93c5fd" font-size="10" text-anchor="middle">ENA  IN1  IN2  IN3  IN4  ENB</text>
-    <text x="110" y="210" fill="#94a3b8" font-size="9" text-anchor="middle">(Logic Control Header)</text>
-
-    <!-- Power Terminal -->
-    <rect x="65" y="115" width="90" height="40" rx="4" fill="#0f172a"/>
-    <text x="110" y="132" fill="#ef4444" font-size="10" font-weight="bold" text-anchor="middle">12V   GND   5V</text>
-    <text x="110" y="146" fill="#94a3b8" font-size="8" text-anchor="middle">Batt(+)  GND   5V_in</text>
+    <!-- Pin Dots & Labels -->
+    <g transform="translate(175, 60)">
+      <!-- Pin 2 (Left IR) -->
+      <circle cx="0" cy="0" r="5" fill="#34d399"/><text x="-15" y="4" fill="#f8fafc" font-size="11" text-anchor="end">Pin 2 (Left IR)</text>
+      <!-- Pin 3 (Right IR) -->
+      <circle cx="0" cy="28" r="5" fill="#34d399"/><text x="-15" y="32" fill="#f8fafc" font-size="11" text-anchor="end">Pin 3 (Right IR)</text>
+      <!-- Pin 5 (ENA PWM) -->
+      <circle cx="0" cy="65" r="5" fill="#fbbf24"/><text x="-15" y="69" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="end">Pin 5 (ENA PWM)</text>
+      <!-- Pin 6 (ENB PWM) -->
+      <circle cx="0" cy="95" r="5" fill="#fbbf24"/><text x="-15" y="99" fill="#fbbf24" font-size="11" font-weight="bold" text-anchor="end">Pin 6 (ENB PWM)</text>
+      <!-- Pin 8 (IN1) -->
+      <circle cx="0" cy="135" r="5" fill="#38bdf8"/><text x="-15" y="139" fill="#38bdf8" font-size="11" text-anchor="end">Pin 8 (IN1)</text>
+      <!-- Pin 9 (IN2 / TRIG) -->
+      <circle cx="0" cy="165" r="5" fill="#60a5fa"/><text x="-15" y="169" fill="#60a5fa" font-size="11" text-anchor="end">Pin 9 (IN2 / TRIG)</text>
+      <!-- Pin 10 (IN3 / ECHO) -->
+      <circle cx="0" cy="195" r="5" fill="#a78bfa"/><text x="-15" y="199" fill="#a78bfa" font-size="11" text-anchor="end">Pin 10 (IN3 / ECHO)</text>
+      <!-- Pin 11 (IN4) -->
+      <circle cx="0" cy="225" r="5" fill="#c084fc"/><text x="-15" y="229" fill="#c084fc" font-size="11" text-anchor="end">Pin 11 (IN4)</text>
+      <!-- 5V -->
+      <circle cx="0" cy="290" r="5" fill="#ef4444"/><text x="-15" y="294" fill="#ef4444" font-size="11" font-weight="bold" text-anchor="end">5V Power</text>
+      <!-- GND -->
+      <circle cx="0" cy="330" r="5" fill="#94a3b8"/><text x="-15" y="334" fill="#94a3b8" font-size="11" font-weight="bold" text-anchor="end">GND Common</text>
+    </g>
   </g>
 
-  <!-- BATTERY -->
-  <g transform="translate(320, 355)">
-    <rect x="0" y="0" width="220" height="110" rx="8" fill="#831843" stroke="#f472b6" stroke-width="1.5"/>
-    <text x="110" y="30" fill="#fdf2f8" font-size="13" font-weight="bold" text-anchor="middle">2x 18650 Battery Pack</text>
-    <text x="110" y="50" fill="#fbcfe8" font-size="11" text-anchor="middle">7.4V External Motor Power</text>
-    <text x="110" y="75" fill="#e2e8f0" font-size="10" text-anchor="middle">(+) to L298N 12V  |  (-) to Common GND</text>
+  <!-- 2. L298N MOTOR DRIVER MODULE (Center) -->
+  <g transform="translate(300, 70)">
+    <rect x="0" y="0" width="260" height="270" rx="12" fill="url(#l298nRed)" stroke="#f87171" stroke-width="2"/>
+    <text x="130" y="28" fill="#ffffff" font-size="14" font-weight="bold" text-anchor="middle">L298N MOTOR DRIVER</text>
+    
+    <!-- Heatsink in Center -->
+    <rect x="95" y="45" width="70" height="50" rx="4" fill="#1f2937" stroke="#4b5563" stroke-width="1"/>
+    <text x="130" y="74" fill="#9ca3af" font-size="10" text-anchor="middle">HEATSINK</text>
+
+    <!-- Motor Terminals OUT1/2 (Left) & OUT3/4 (Right) -->
+    <rect x="-10" y="55" width="22" height="40" rx="3" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+    <text x="1" y="45" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">OUT1/2</text>
+    
+    <rect x="248" y="55" width="22" height="40" rx="3" fill="#0284c7" stroke="#38bdf8" stroke-width="1"/>
+    <text x="259" y="45" fill="#fbbf24" font-size="10" font-weight="bold" text-anchor="middle">OUT3/4</text>
+
+    <!-- Power Terminals (12V, GND, 5V) -->
+    <rect x="80" y="115" width="100" height="40" rx="4" fill="#0f172a" stroke="#64748b" stroke-width="1"/>
+    <circle cx="95" cy="135" r="5" fill="#ef4444"/><text x="95" y="150" fill="#ef4444" font-size="9" text-anchor="middle">12V</text>
+    <circle cx="130" cy="135" r="5" fill="#94a3b8"/><text x="130" y="150" fill="#94a3b8" font-size="9" text-anchor="middle">GND</text>
+    <circle cx="165" cy="135" r="5" fill="#ef4444"/><text x="165" y="150" fill="#ef4444" font-size="9" text-anchor="middle">5V</text>
+
+    <!-- Logic Pins Header (ENA, IN1, IN2, IN3, IN4, ENB) -->
+    <rect x="25" y="185" width="210" height="55" rx="5" fill="#0f172a" stroke="#64748b" stroke-width="1"/>
+    <text x="130" y="202" fill="#cbd5e1" font-size="10" font-weight="bold" text-anchor="middle">Logic Control Pins</text>
+    
+    <!-- 6 Pins -->
+    <circle cx="45" cy="225" r="5" fill="#fbbf24"/><text x="45" y="217" fill="#fbbf24" font-size="9" text-anchor="middle">ENA</text>
+    <circle cx="78" cy="225" r="5" fill="#38bdf8"/><text x="78" y="217" fill="#38bdf8" font-size="9" text-anchor="middle">IN1</text>
+    <circle cx="112" cy="225" r="5" fill="#60a5fa"/><text x="112" y="217" fill="#60a5fa" font-size="9" text-anchor="middle">IN2</text>
+    <circle cx="148" cy="225" r="5" fill="#a78bfa"/><text x="148" y="217" fill="#a78bfa" font-size="9" text-anchor="middle">IN3</text>
+    <circle cx="182" cy="225" r="5" fill="#c084fc"/><text x="182" y="217" fill="#c084fc" font-size="9" text-anchor="middle">IN4</text>
+    <circle cx="215" cy="225" r="5" fill="#fbbf24"/><text x="215" y="217" fill="#fbbf24" font-size="9" text-anchor="middle">ENB</text>
   </g>
 
-  <!-- SENSORS RIGHT COLUMN -->
-  <!-- 3.7 TCRT5000 IR -->
-  <g transform="translate(580, 85)">
-    <rect x="0" y="0" width="230" height="180" rx="10" fill="url(#sensorGrad)" stroke="#10b981" stroke-width="1.5"/>
-    <text x="115" y="25" fill="#34d399" font-size="13" font-weight="bold" text-anchor="middle">Practical 3.7: Dual TCRT5000 IR</text>
-    <text x="115" y="42" fill="#94a3b8" font-size="10" text-anchor="middle">Line Tracking Reflectance Sensors</text>
-
-    <text x="20" y="70" fill="#f8fafc" font-size="11">Left IR Sensor (OUT)  <tspan fill="#38bdf8" font-weight="bold">→ Pin 2</tspan></text>
-    <text x="20" y="95" fill="#f8fafc" font-size="11">Right IR Sensor (OUT) <tspan fill="#38bdf8" font-weight="bold">→ Pin 3</tspan></text>
-    <text x="20" y="120" fill="#ef4444" font-size="11">VCC (Both Modules)    <tspan fill="#ef4444" font-weight="bold">→ 5V</tspan></text>
-    <text x="20" y="145" fill="#94a3b8" font-size="11">GND (Both Modules)    <tspan fill="#94a3b8" font-weight="bold">→ GND</tspan></text>
-    <text x="115" y="168" fill="#fbbf24" font-size="9" text-anchor="middle">Adjust blue pot so LED turns ON on black tape</text>
+  <!-- 3. BATTERY PACK (Bottom Center) -->
+  <g transform="translate(300, 380)">
+    <rect x="0" y="0" width="260" height="120" rx="10" fill="#831843" stroke="#f472b6" stroke-width="2"/>
+    <text x="130" y="32" fill="#fdf2f8" font-size="13" font-weight="bold" text-anchor="middle">2x 18650 Battery Pack (7.4V)</text>
+    <text x="130" y="52" fill="#fbcfe8" font-size="11" text-anchor="middle">External High-Current Motor Power</text>
+    
+    <circle cx="60" cy="85" r="6" fill="#ef4444"/><text x="80" y="89" fill="#ef4444" font-size="12" font-weight="bold">(+) 7.4V</text>
+    <circle cx="180" cy="85" r="6" fill="#000000" stroke="#94a3b8" stroke-width="1.5"/><text x="200" y="89" fill="#94a3b8" font-size="12" font-weight="bold">(-) GND</text>
   </g>
 
-  <!-- 3.8 HC-SR04 ULTRASONIC -->
-  <g transform="translate(580, 285)">
-    <rect x="0" y="0" width="230" height="180" rx="10" fill="url(#sensorGrad)" stroke="#60a5fa" stroke-width="1.5"/>
-    <text x="115" y="25" fill="#60a5fa" font-size="13" font-weight="bold" text-anchor="middle">Practical 3.8: HC-SR04 Ultrasound</text>
-    <text x="115" y="42" fill="#94a3b8" font-size="10" text-anchor="middle">Obstacle Detection &amp; Avoidance</text>
+  <!-- 4. PRACTICAL 3.7: DUAL TCRT5000 IR (Top Right) -->
+  <g transform="translate(630, 70)">
+    <rect x="0" y="0" width="280" height="190" rx="10" fill="url(#cardGrad)" stroke="#10b981" stroke-width="2"/>
+    <text x="140" y="26" fill="#34d399" font-size="13" font-weight="bold" text-anchor="middle">Practical 3.7: Dual TCRT5000 IR</text>
+    <text x="140" y="44" fill="#94a3b8" font-size="10" text-anchor="middle">Optical Line Tracking Sensors</text>
 
-    <text x="20" y="75" fill="#f8fafc" font-size="11">TRIG Pulse Output     <tspan fill="#38bdf8" font-weight="bold">→ Pin 9</tspan></text>
-    <text x="20" y="100" fill="#f8fafc" font-size="11">ECHO Return Input     <tspan fill="#38bdf8" font-weight="bold">→ Pin 10</tspan></text>
-    <text x="20" y="125" fill="#ef4444" font-size="11">VCC Power             <tspan fill="#ef4444" font-weight="bold">→ 5V</tspan></text>
-    <text x="20" y="150" fill="#94a3b8" font-size="11">GND Common           <tspan fill="#94a3b8" font-weight="bold">→ GND</tspan></text>
+    <!-- Sensor 1 Left -->
+    <rect x="20" y="60" width="110" height="85" rx="6" fill="#1e293b" stroke="#34d399" stroke-width="1"/>
+    <text x="75" y="80" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">LEFT SENSOR</text>
+    <circle cx="35" cy="100" r="4" fill="#34d399"/><text x="45" y="103" fill="#ffffff" font-size="9">OUT $\rightarrow$ D2</text>
+    <circle cx="35" cy="118" r="4" fill="#ef4444"/><text x="45" y="121" fill="#ef4444" font-size="9">VCC $\rightarrow$ 5V</text>
+    <circle cx="35" cy="134" r="4" fill="#94a3b8"/><text x="45" y="137" fill="#94a3b8" font-size="9">GND</text>
+
+    <!-- Sensor 2 Right -->
+    <rect x="150" y="60" width="110" height="85" rx="6" fill="#1e293b" stroke="#34d399" stroke-width="1"/>
+    <text x="205" y="80" fill="#34d399" font-size="11" font-weight="bold" text-anchor="middle">RIGHT SENSOR</text>
+    <circle cx="165" cy="100" r="4" fill="#34d399"/><text x="175" y="103" fill="#ffffff" font-size="9">OUT $\rightarrow$ D3</text>
+    <circle cx="165" cy="118" r="4" fill="#ef4444"/><text x="175" y="121" fill="#ef4444" font-size="9">VCC $\rightarrow$ 5V</text>
+    <circle cx="165" cy="134" r="4" fill="#94a3b8"/><text x="175" y="137" fill="#94a3b8" font-size="9">GND</text>
+
+    <text x="140" y="170" fill="#fbbf24" font-size="10" text-anchor="middle">Tuning: Adjust pot until LED on black tape</text>
   </g>
+
+  <!-- 5. PRACTICAL 3.8: HC-SR04 ULTRASONIC (Bottom Right) -->
+  <g transform="translate(630, 290)">
+    <rect x="0" y="0" width="280" height="210" rx="10" fill="url(#cardGrad)" stroke="#60a5fa" stroke-width="2"/>
+    <text x="140" y="28" fill="#60a5fa" font-size="13" font-weight="bold" text-anchor="middle">Practical 3.8: HC-SR04 Ultrasonic</text>
+    <text x="140" y="46" fill="#94a3b8" font-size="10" text-anchor="middle">Distance Sensing &amp; Collision Avoidance</text>
+
+    <rect x="25" y="65" width="230" height="95" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="1"/>
+    <!-- 2 Transducer eyes -->
+    <circle cx="75" cy="110" r="22" fill="#374151" stroke="#93c5fd" stroke-width="2"/>
+    <circle cx="75" cy="110" r="12" fill="#1e293b"/>
+    <circle cx="185" cy="110" r="22" fill="#374151" stroke="#93c5fd" stroke-width="2"/>
+    <circle cx="185" cy="110" r="12" fill="#1e293b"/>
+    
+    <!-- Pins Row -->
+    <text x="140" y="180" fill="#f8fafc" font-size="10" text-anchor="middle">
+      <tspan fill="#ef4444">VCC(5V)</tspan> | 
+      <tspan fill="#60a5fa">TRIG(D9)</tspan> | 
+      <tspan fill="#a78bfa">ECHO(D10)</tspan> | 
+      <tspan fill="#94a3b8">GND</tspan>
+    </text>
+  </g>
+
+  <!-- COLORFUL SCHEMATIC WIRES -->
+
+  <!-- 1. Logic wires Arduino -> L298N -->
+  <!-- ENA (PWM D5) -->
+  <path d="M 205 125 Q 270 125 345 295" fill="none" stroke="#fbbf24" stroke-width="2"/>
+  <!-- IN1 (D8) -->
+  <path d="M 205 195 Q 285 195 378 295" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <!-- IN2 (D9) -->
+  <path d="M 205 225 Q 300 225 412 295" fill="none" stroke="#60a5fa" stroke-width="2"/>
+  <!-- IN3 (D10) -->
+  <path d="M 205 255 Q 315 255 448 295" fill="none" stroke="#a78bfa" stroke-width="2"/>
+  <!-- IN4 (D11) -->
+  <path d="M 205 285 Q 330 285 482 295" fill="none" stroke="#c084fc" stroke-width="2"/>
+  <!-- ENB (PWM D6) -->
+  <path d="M 205 155 Q 350 155 515 295" fill="none" stroke="#fbbf24" stroke-width="2"/>
+
+  <!-- 2. Battery Wires -> L298N Power -->
+  <path d="M 360 465 L 395 205" fill="none" stroke="#ef4444" stroke-width="3"/>
+  <path d="M 480 465 L 430 205" fill="none" stroke="#000000" stroke-width="3"/>
+  <circle cx="395" cy="205" r="3" fill="#ef4444"/>
+  <circle cx="430" cy="205" r="3" fill="#000000"/>
+
+  <!-- 3. Sensor wires from Arduino -->
+  <!-- D2 to Left IR -->
+  <path d="M 205 60 Q 400 25 650 160" fill="none" stroke="#34d399" stroke-width="2"/>
+  <!-- D3 to Right IR -->
+  <path d="M 205 88 Q 420 45 780 160" fill="none" stroke="#34d399" stroke-width="2"/>
 </svg>
