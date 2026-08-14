@@ -5,93 +5,63 @@
   =========================================================
 
   Objective:
-  Regulate mobile robot velocity using Pulse Width Modulation (PWM), implement soft acceleration
-  and deceleration ramps to reduce inrush current surges, and calibrate differential motor trim for straight-line tracking.
+  Control the speed of a 2-wheel mobile robot using Pulse Width Modulation (PWM),
+  test discrete speed presets, perform smooth acceleration/deceleration ramps,
+  and calibrate motor speed trim for straight driving.
 
-  Description:
-  Demonstrates continuous velocity vector regulation using Arduino hardware PWM pins (D5 and D6 on Timer0).
-  Tests multi-tier speed presets (Creep, Cruise, Fast, Maximum), performs gradual acceleration and
-  deceleration ramps, and provides differential hardware trim offsets to balance mechanical gearbox variances.
+  ---------------------------------------------------------
+  How PWM (Pulse Width Modulation) Controls Motor Speed:
+  ---------------------------------------------------------
+  Arduino analogWrite(pin, value) generates a PWM signal with values from 0 to 255:
+  - value = 0   (0% Duty Cycle)   -> Motor is OFF (0V average)
+  - value = 100 (~40% Duty Cycle) -> Slow / Crawl speed
+  - value = 180 (~70% Duty Cycle) -> Medium / Cruising speed
+  - value = 255 (100% Duty Cycle) -> Full Maximum speed
 
-  Hardware:
-  - Arduino UNO R3 (or compatible AVR development board)
-  - L293D / L298N Dual H-Bridge Motor Driver
-  - 2x DC Yellow BO Gear Motors (Nominal: 3V - 6V, 1:48 gear ratio)
-  - 2WD Robotic Chassis with caster wheel
-  - External Motor Power Supply: 6.0V - 7.4V (e.g. 4x AA Battery Pack)
+  Smooth Acceleration Ramp:
+  Gradually increasing PWM from 0 to 255 prevents sudden high battery current surges
+  and keeps the Arduino from resetting due to brownout voltage drops.
 
-  Pin Configuration:
-  -------------------------------------------------------------
-  Driver / Component Pin   Arduino UNO Pin   Function
-  -------------------------------------------------------------
-  ENA                      Pin 5 (PWM)       Left Motor PWM Speed (Timer0 ~976 Hz)
-  IN1                      Pin 2             Left Motor Direction Input 1
-  IN2                      Pin 3             Left Motor Direction Input 2
-  IN3                      Pin 4             Right Motor Direction Input 1
-  IN4                      Pin 7             Right Motor Direction Input 2
-  ENB                      Pin 6 (PWM)       Right Motor PWM Speed (Timer0 ~976 Hz)
-  VCC2 / VM                Battery (+)       Motor Power Supply (6.0V - 7.4V Recommended)
-  GND                      GND & Batt (-)    Common Ground Busbar (Mandatory)
-  -------------------------------------------------------------
+  ---------------------------------------------------------
+  Pin Connections (L298N / Standard Motor Driver):
+  ---------------------------------------------------------
+  Left Motor:   ENA -> Pin 5 (PWM), IN1 -> Pin 2, IN2 -> Pin 3
+  Right Motor:  ENB -> Pin 6 (PWM), IN3 -> Pin 4, IN4 -> Pin 7
+  Motor Power:  6.0V - 7.4V Battery Pack (+ to VM/12V, - to GND)
+  Arduino GND:  Common Ground connected to Battery (-)
 
-  Working Principle & PWM Mathematics:
-  DC motor rotational speed is proportional to the average voltage across its terminals.
-  Pulse Width Modulation (PWM) rapidly chops the DC supply voltage at a fixed frequency (~976.56 Hz on Timer0).
-  The effective average voltage applied to the motor terminal is:
-    V_avg = (Duty_Cycle_Fraction) * (V_motor - V_driver_drop)
-  Where Duty Cycle Fraction on 8-bit AVR is:
-    Duty Cycle (%) = (analogWrite_Value / 255.0) * 100%
-  Soft starting ramps reduce sudden inrush current demand and assist battery voltage stability,
-  reducing the likelihood of brownout resets on low-capacity cells.
-
-  Expected Behavior:
-  1. Section 1 (Presets): Robot tests 4 discrete speed tiers (PWM: 90, 160, 220, 255) for 2.0s each (blocking sequence).
-  2. Section 2 (Soft Start): Robot ramps PWM from 60 to 255 in 5-unit steps (40ms interval).
-  3. Section 3 (Soft Stop): Robot ramps PWM from 255 down to 60 in 5-unit steps, then halts.
-  4. Real-time PWM percentages are streamed to Serial Monitor at 9600 baud.
-
-  Notes:
-  - If the vehicle veers to one side during straight forward drive due to motor manufacturing tolerances,
-    adjust `LEFT_MOTOR_TRIM` or `RIGHT_MOTOR_TRIM` (range: -50 to +50) to achieve balanced straight-line motion.
-  - Requires physical hardware verification to calibrate trim values under actual load.
-
-  Author/Organization:
-  National Institute of Electronics & Information Technology
-  NIELIT Ropar
-
+  Author: National Institute of Electronics & Information Technology (NIELIT Ropar)
   =========================================================
 */
+
+#include <NIELIT_Robotics_Practicals.h>
 
 // =====================================================
 // PIN DEFINITIONS
 // =====================================================
 
-// Left Motor Driver Pins (ENA must be a hardware PWM pin: D5 on Timer0)
-#define ENA 5
-#define IN1 2
-#define IN2 3
+const int PIN_ENA = 5; // PWM pin for Left Motor speed
+const int PIN_IN1 = 2;
+const int PIN_IN2 = 3;
 
-// Right Motor Driver Pins (ENB must be a hardware PWM pin: D6 on Timer0)
-#define ENB 6
-#define IN3 4
-#define IN4 7
+const int PIN_ENB = 6; // PWM pin for Right Motor speed
+const int PIN_IN3 = 4;
+const int PIN_IN4 = 7;
 
 // =====================================================
-// MOTOR TRIM CALIBRATION
+// SPEED TRIM CALIBRATION
 // =====================================================
 
-// Adjust if one motor rotates faster than the other
-// Example: If robot veers slightly right, increase LEFT_MOTOR_TRIM or decrease RIGHT_MOTOR_TRIM
-const int LEFT_MOTOR_TRIM  = 0;
-const int RIGHT_MOTOR_TRIM = 0;
+// Adjust if one motor spins faster than the other
+// Example: If robot veers right, increase LEFT_TRIM (e.g. +15) or decrease RIGHT_TRIM (-15)
+const int LEFT_TRIM  = 0;
+const int RIGHT_TRIM = 0;
 
 // =====================================================
-// FUNCTION PROTOTYPES
+// FUNCTION DECLARATIONS
 // =====================================================
 
-void applyPWM(int leftPWM, int rightPWM);
-void setDirection(bool forward);
-void setRobotSpeedVector(bool forward, int pwmMagnitude);
+void drive(bool forward, int speed);
 void stopRobot();
 
 // =====================================================
@@ -101,124 +71,121 @@ void stopRobot();
 void setup() {
   Serial.begin(9600);
 
-  pinMode(ENA, OUTPUT);
-  pinMode(IN1, OUTPUT);
-  pinMode(IN2, OUTPUT);
-  pinMode(ENB, OUTPUT);
-  pinMode(IN3, OUTPUT);
-  pinMode(IN4, OUTPUT);
+  pinMode(PIN_ENA, OUTPUT);
+  pinMode(PIN_IN1, OUTPUT);
+  pinMode(PIN_IN2, OUTPUT);
+  pinMode(PIN_ENB, OUTPUT);
+  pinMode(PIN_IN3, OUTPUT);
+  pinMode(PIN_IN4, OUTPUT);
 
-  // Safe initialization
   stopRobot();
 
-  Serial.println(F("=================================================="));
-  Serial.println(F(" NIELIT Practical 3.5: PWM Speed Vector Regulation"));
-  Serial.println(F("=================================================="));
-  Serial.println(F("[INFO] System initialized"));
-  Serial.println(F("[INFO] Hardware PWM Channels: ENA=Pin5, ENB=Pin6 (Timer0 ~976Hz)"));
-  Serial.println(F("[INFO] Starting PWM speed vector test in 2s...\n"));
+  NIELIT::Robotics::printPracticalHeader(Serial, "3.5", "PWM Speed Control & Acceleration Ramps");
+  Serial.println(F("[INFO] Place car on a stand or clear open floor."));
+  Serial.println(F("[INFO] Starting speed tests in 2 seconds...\n"));
   delay(2000);
 }
 
 // =====================================================
-// MAIN LOOP
+// MAIN LOOP: Speed Presets & Smooth Acceleration Ramps
 // =====================================================
 
 void loop() {
-  // ---------------------------------------------------
-  // Section 1: Multi-Tier Speed Presets
-  // ---------------------------------------------------
-  Serial.println(F("--- 1. Testing Discrete Speed Presets ---"));
+  Serial.println(F("--- SECTION 1: TESTING FIXED SPEED PRESETS ---"));
 
-  Serial.println(F("[PWM] Tier 1: Creep Velocity (PWM: 90 / ~35% Duty Cycle)"));
-  setRobotSpeedVector(true, 90);
-  delay(2000);
+  // 1. Slow Speed (PWM = 100)
+  Serial.println(F("[SPEED 1] SLOW Speed (PWM = 100 / ~39%)"));
+  drive(true, 100);
+  delay(2500);
+  stopRobot();
+  delay(1000);
 
-  Serial.println(F("[PWM] Tier 2: Cruise Velocity (PWM: 160 / ~63% Duty Cycle)"));
-  setRobotSpeedVector(true, 160);
-  delay(2000);
+  // 2. Medium Cruise Speed (PWM = 180)
+  Serial.println(F("[SPEED 2] MEDIUM Cruise Speed (PWM = 180 / ~70%)"));
+  drive(true, 180);
+  delay(2500);
+  stopRobot();
+  delay(1000);
 
-  Serial.println(F("[PWM] Tier 3: High Velocity (PWM: 220 / ~86% Duty Cycle)"));
-  setRobotSpeedVector(true, 220);
-  delay(2000);
+  // 3. Fast Speed (PWM = 220)
+  Serial.println(F("[SPEED 3] FAST Speed (PWM = 220 / ~86%)"));
+  drive(true, 220);
+  delay(2500);
+  stopRobot();
+  delay(1000);
 
-  Serial.println(F("[PWM] Tier 4: Maximum Velocity (PWM: 255 / 100% Duty Cycle)"));
-  setRobotSpeedVector(true, 255);
-  delay(2000);
-
+  // 4. Maximum Speed (PWM = 255)
+  Serial.println(F("[SPEED 4] MAXIMUM Full Speed (PWM = 255 / 100%)"));
+  drive(true, 255);
+  delay(2500);
   stopRobot();
   delay(1500);
 
-  // ---------------------------------------------------
-  // Section 2: Smooth Acceleration Ramp (Soft Start)
-  // ---------------------------------------------------
-  Serial.println(F("\n--- 2. Smooth Acceleration Ramp (Soft Start) ---"));
-  setDirection(true); // Establish forward H-bridge state
+  Serial.println(F("\n--- SECTION 2: SMOOTH ACCELERATION RAMP ---"));
+  Serial.println(F("[RAMP UP] Gradually increasing speed from 60 to 255..."));
 
+  // Ramp Up from 60 to 255
   for (int pwm = 60; pwm <= 255; pwm += 5) {
-    applyPWM(pwm, pwm);
-    Serial.print(F("[RAMP UP] PWM: "));
+    drive(true, pwm);
+    Serial.print(F("PWM: "));
     Serial.print(pwm);
     Serial.print(F(" ("));
     Serial.print((pwm * 100) / 255);
     Serial.println(F("%)"));
-    delay(40);
+    delay(50);
   }
-  delay(1000);
+  delay(1500);
 
-  // ---------------------------------------------------
-  // Section 3: Smooth Deceleration Ramp (Soft Stop)
-  // ---------------------------------------------------
-  Serial.println(F("\n--- 3. Smooth Deceleration Ramp (Soft Stop) ---"));
+  Serial.println(F("\n--- SECTION 3: SMOOTH DECELERATION RAMP ---"));
+  Serial.println(F("[RAMP DOWN] Gradually decreasing speed from 255 to 60..."));
+
+  // Ramp Down from 255 to 60
   for (int pwm = 255; pwm >= 60; pwm -= 5) {
-    applyPWM(pwm, pwm);
-    Serial.print(F("[RAMP DOWN] PWM: "));
+    drive(true, pwm);
+    Serial.print(F("PWM: "));
     Serial.print(pwm);
-    Serial.println(F(""));
-    delay(40);
+    Serial.print(F(" ("));
+    Serial.print((pwm * 100) / 255);
+    Serial.println(F("%)"));
+    delay(50);
   }
 
   stopRobot();
-  Serial.println(F("[INFO] Vehicle brought to smooth stop.\n"));
-  delay(3000);
+  Serial.println(F("[STOP] Motors stopped safely."));
+
+  Serial.println(F("\n[INFO] Speed test cycle completed. Pausing 5 seconds before repeating...\n"));
+  delay(5000);
 }
 
 // =====================================================
-// PWM & VECTOR CONTROL HELPERS
+// MOTOR DRIVING FUNCTIONS
 // =====================================================
 
-void applyPWM(int leftPWM, int rightPWM) {
-  int adjustedLeft  = constrain(leftPWM + LEFT_MOTOR_TRIM, 0, 255);
-  int adjustedRight = constrain(rightPWM + RIGHT_MOTOR_TRIM, 0, 255);
+void drive(bool forward, int speed) {
+  int actualLeft  = constrain(speed + LEFT_TRIM, 0, 255);
+  int actualRight = constrain(speed + RIGHT_TRIM, 0, 255);
 
-  analogWrite(ENA, adjustedLeft);
-  analogWrite(ENB, adjustedRight);
-}
-
-void setDirection(bool forward) {
   if (forward) {
-    digitalWrite(IN1, HIGH);
-    digitalWrite(IN2, LOW);
-    digitalWrite(IN3, HIGH);
-    digitalWrite(IN4, LOW);
+    digitalWrite(PIN_IN1, HIGH);
+    digitalWrite(PIN_IN2, LOW);
+    digitalWrite(PIN_IN3, HIGH);
+    digitalWrite(PIN_IN4, LOW);
   } else {
-    digitalWrite(IN1, LOW);
-    digitalWrite(IN2, HIGH);
-    digitalWrite(IN3, LOW);
-    digitalWrite(IN4, HIGH);
+    digitalWrite(PIN_IN1, LOW);
+    digitalWrite(PIN_IN2, HIGH);
+    digitalWrite(PIN_IN3, LOW);
+    digitalWrite(PIN_IN4, HIGH);
   }
-}
 
-void setRobotSpeedVector(bool forward, int pwmMagnitude) {
-  setDirection(forward);
-  applyPWM(pwmMagnitude, pwmMagnitude);
+  analogWrite(PIN_ENA, actualLeft);
+  analogWrite(PIN_ENB, actualRight);
 }
 
 void stopRobot() {
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, LOW);
-  analogWrite(ENA, 0);
-  analogWrite(ENB, 0);
+  digitalWrite(PIN_IN1, LOW);
+  digitalWrite(PIN_IN2, LOW);
+  digitalWrite(PIN_IN3, LOW);
+  digitalWrite(PIN_IN4, LOW);
+  analogWrite(PIN_ENA, 0);
+  analogWrite(PIN_ENB, 0);
 }

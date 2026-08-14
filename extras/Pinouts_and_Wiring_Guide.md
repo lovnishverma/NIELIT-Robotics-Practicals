@@ -1,112 +1,125 @@
 # NIELIT Robotics Practicals — Pinout & Wiring Reference Guide
 
-This reference guide details hardware connections, motor driver architectures, sensor pin mappings, and power distribution configurations for the **NIELIT Robotics Practicals** series (3.1 to 3.8).
+A beginner-friendly hardware and wiring reference for the **NIELIT Robotics Practicals** series (3.1 to 3.8).
 
 ---
 
-## 1. L293D Dual H-Bridge Motor Driver Pinout
+## 1. Understanding Your 2WD Mobile Robot Platform
 
 ```text
-               +---v---+
-  (ENA) 1,2EN -| 1   16|- VCC1 (Logic 5V from Arduino)
-    (IN1)  1A -| 2   15|- 4A (IN4)
-   (OUT1)  1Y -| 3   14|- 4Y (OUT4)
-          GND -| 4   13|- GND
-          GND -| 5   12|- GND
-   (OUT2)  2Y -| 6   11|- 3Y (OUT3)
-    (IN2)  2A -| 7   10|- 3A (IN3)
-   (VM)  VCC2 -| 8    9|- 3,4EN (ENB)
-               +-------+
+                  [ Front / Sensor Side ]
+                            ▲
+                            │
+   [Left BO Motor] ─────────┴───────── [Right BO Motor]
+   (Rubber Tire)                        (Rubber Tire)
+                            │
+                            │
+                     ( BALL CASTER )
+                 [ Rear / Balance Side ]
 ```
 
-### Driver IC Characteristics:
-- **L293D:** Includes internal flyback clamp diodes across all 4 half-H channels to suppress back-EMF spikes.
-- **L298N Module:** Standard red breakout boards include external Schottky/rectifier flyback diodes. If using a bare L298N IC, external diodes (e.g. 1N5819 or 1N4007) are required.
+### Why Does the 3rd Middle Wheel Have No Motor?
+* **Differential Drive Kinematics:** This robot steers using the relative speed and direction of its two motorized drive wheels.
+* **The Ball Caster Wheel:** It is an unpowered, free-rolling swivel/ball that acts as a **3rd balance point** to keep the chassis level.
+* **Important Assembly Rule (Leveling):** Ensure both yellow rubber wheels and the caster wheel touch the floor with equal firm pressure. If the caster standoff is too tall, the rubber wheels will float and spin freely in the air!
 
 ---
 
-## 2. Standard Pin Configurations
+## 2. Motor Driver Wiring Guide
 
-### Standard 2WD Chassis / Motor & Bluetooth Configuration (Practicals 3.1 - 3.6, 3.8)
-| Driver Function | L293D IC Pin | Arduino UNO Pin | Purpose | Notes |
-| :--- | :---: | :---: | :--- | :--- |
-| **ENA** | Pin 1 | **D5** (PWM) | Left Motor Speed Control | Timer0 (~976 Hz) |
-| **IN1** | Pin 2 | **D2** | Left Motor Direction Input 1 | Digital Output |
-| **IN2** | Pin 7 | **D3** | Left Motor Direction Input 2 | Digital Output |
-| **IN3** | Pin 10 | **D4** | Right Motor Direction Input 1 | Digital Output |
-| **IN4** | Pin 15 | **D7** | Right Motor Direction Input 2 | Digital Output |
-| **ENB** | Pin 9 | **D6** (PWM) | Right Motor Speed Control | Timer0 (~976 Hz) |
-| **VCC1** | Pin 16 | **5V** | Logic Power from Arduino | Regulated 5V Rail |
-| **VCC2 / VM** | Pin 8 | **Battery (+)** | Motor Power Supply | **6.0V – 7.4V Recommended** |
-| **GND** | Pins 4, 5, 12, 13 | **GND** | Common Ground Busbar | Common with Battery (-) |
+### Option A: Standard L298N Motor Driver Module (Recommended for Direct Pin Control)
+
+```text
+               +-----------------------------+
+               |        L298N MODULE         |
+               |                             |
+  Motor A OUT1 | [o]                     [o] | Motor B OUT3
+  Motor A OUT2 | [o]                     [o] | Motor B OUT4
+               |                             |
+               |  [+]   [-]   [+5V]          |
+               |  12V   GND    5V            |
+               +---+-----+-----+-------------+
+                   |     |     |
+                   |     |     +-----> Arduino 5V
+                   |     +-----------> Arduino GND & Battery (-)
+                   +-----------------> Motor Battery (+) [6V - 7.4V]
+
+  Control Signal Header to Arduino:
+  -------------------------------------------------------------
+  L298N Pin    Arduino UNO Pin   Function
+  -------------------------------------------------------------
+  ENA          Pin 5 (PWM)       Left Motor Speed Control
+  IN1          Pin 2             Left Motor Direction 1
+  IN2          Pin 3             Left Motor Direction 2
+  IN3          Pin 4             Right Motor Direction 1
+  IN4          Pin 7             Right Motor Direction 2
+  ENB          Pin 6 (PWM)       Right Motor Speed Control
+  -------------------------------------------------------------
+```
 
 ---
 
-### Line Follower Configuration (Practical 3.7)
-*Avoids pin conflict because D2 and D3 are dedicated to the digital IR Line Sensors:*
-| Function | Arduino UNO Pin | Description | Notes |
-| :--- | :---: | :--- | :--- |
-| **LEFT_SENSOR** | **D2** | Digital Line Detection (Left TCRT5000) | Digital Input |
-| **RIGHT_SENSOR** | **D3** | Digital Line Detection (Right TCRT5000) | Digital Input |
-| **ENA** | **D5** (PWM) | Left Motor Speed Control | Timer0 (~976 Hz) |
-| **IN1** | **D8** | Left Motor Direction Input 1 | Digital Output |
-| **IN2** | **D9** | Left Motor Direction Input 2 | Digital Output |
-| **ENB** | **D6** (PWM) | Right Motor Speed Control | Timer0 (~976 Hz) |
-| **IN3** | **D10** | Right Motor Direction Input 1 | Digital Output |
-| **IN4** | **D11** | Right Motor Direction Input 2 | Digital Output |
+### Option B: Blue L293D Motor Driver Shield (Adafruit v1 Style)
+
+If you have the blue shield that plugs directly onto the Arduino UNO:
+* **Left Motor:** Wire to screw terminal **M1** (Top-Left) or **M2**.
+* **Right Motor:** Wire to screw terminal **M3** (Bottom-Left) or **M4**.
+* **External Power:** Connect your 2x 18650 Battery Pack (+ and -) to the **EXT_PWR (+M and GND)** screw terminal.
+* **PWR Jumper:** Leave the yellow `PWR` jumper ON if you want the battery to power both Arduino and motors.
+* *Note:* This shield uses an onboard 74HC595 shift register. For custom shield code, install the `Adafruit Motor Shield library (v1)` in Arduino IDE.
 
 ---
 
-## 3. Sensor & Module Pin Assignments
+## 3. Sensor Wiring Reference
 
 ### HC-SR04 Ultrasonic Distance Sensor (Practical 3.8)
-| HC-SR04 Pin | Arduino Pin | Description | Operating Voltage |
-| :--- | :---: | :--- | :---: |
-| **VCC** | 5V | 5V Power Supply Rail | 5V DC |
-| **TRIG** | **D9** | Ultrasonic 10us Trigger Pulse Output | 5V TTL |
-| **ECHO** | **D10** | Echo Return Pulse Time Input | 5V TTL |
-| **GND** | GND | Common Ground | 0V |
+```text
+  HC-SR04 Pin   Arduino Pin   Function
+  -------------------------------------------------------------
+  VCC           5V            5V Power Rail
+  TRIG          Pin 9         Ultrasonic Trigger Pulse (10us)
+  ECHO          Pin 10        Echo Return Pulse Timing
+  GND           GND           Common Ground
+  -------------------------------------------------------------
+```
 
 ### TCRT5000 IR Line Tracking Sensors (Practical 3.7)
-| Sensor Module Pin | Arduino Pin | Description | Operating Voltage |
-| :--- | :---: | :--- | :---: |
-| **Left IR (OUT)** | **D2** (`LEFT_SENSOR`) | Digital Line Detection (Left) | 5V TTL |
-| **Right IR (OUT)**| **D3** (`RIGHT_SENSOR`)| Digital Line Detection (Right)| 5V TTL |
-| **VCC** | 5V | Power Supply Rail | 5V DC |
-| **GND** | GND | Common Ground | 0V |
+*Avoids pin conflicts by shifting motor direction lines to Pins 8–11:*
+```text
+  Sensor / Driver Pin    Arduino Pin   Description
+  -------------------------------------------------------------
+  Left IR Sensor (OUT)   Pin 2         Digital Line Input (Left)
+  Right IR Sensor (OUT)  Pin 3         Digital Line Input (Right)
+  Sensor VCC / GND       5V / GND      5V Logic Power
+  Left Motor ENA (PWM)   Pin 5         Left Speed PWM
+  Left Motor IN1 / IN2   Pin 8, Pin 9  Left Motor Direction
+  Right Motor ENB (PWM)  Pin 6         Right Speed PWM
+  Right Motor IN3 / IN4  Pin 10, Pin 11 Right Motor Direction
+  -------------------------------------------------------------
+```
 
-### HC-05 / HC-06 Bluetooth Breakout Module (Practical 3.6)
-| Bluetooth Module Pin | Arduino Pin | Description | Notes |
-| :--- | :---: | :--- | :--- |
-| **VCC** | 5V | Power Supply (Breakout onboard LDO) | 5V DC |
-| **GND** | GND | Common Ground | 0V |
-| **TXD** | **D12** (RX) | SoftwareSerial Receive from Bluetooth | 3.3V TTL out to Arduino |
-| **RXD** | **D13** (TX) | SoftwareSerial Transmit to Bluetooth | **Requires 1k/2k Resistor Divider to 3.3V** |
+### HC-05 / HC-06 Bluetooth Module (Practical 3.6)
+```text
+  HC-05 Pin     Arduino Pin   Description
+  -------------------------------------------------------------
+  VCC           5V            Power supply (5V)
+  GND           GND           Common Ground
+  TXD           Pin 12 (RX)   Connects directly to Arduino D12
+  RXD           Pin 13 (TX)   Connects via 1k/2k Resistor Divider
+  -------------------------------------------------------------
+
+  Voltage Divider for 3.3V RX Pin Protection:
+  Arduino D13 ---[ 1k Ohm ]---+---> HC-05 RXD
+                              |
+                           [ 2k Ohm ]
+                              |
+                         Arduino GND
+```
 
 ---
 
-## 4. Power Distribution Architecture
+## 4. Power & Safety Best Practices
 
-```text
-    +-------------------------------------------------------+
-    |         MOTOR BATTERY PACK (6.0V - 7.4V)              |
-    |         (4x AA Alkaline or 2S Li-ion Pack)            |
-    +---------------------------+---------------------------+
-                                |
-               +----------------+----------------+
-               | (+)                             | (-)
-               v                                 v
-       +---------------+                 +---------------+
-       | L293D / L298N |                 |  COMMON GND   |
-       | Motor VCC2/VM |                 |    BUSBAR     |
-       +---------------+                 +-------+-------+
-                                                 |
-               +---------------------------------+
-               |
-               v
-       +---------------+
-       |  Arduino GND  | <------- 5V Regulated USB Supply
-       +---------------+
-```
-
-> **Critical Safety Rule**: Always connect the negative terminal of the motor battery pack directly to the Arduino `GND` pin. Never operate the motor driver without a common ground reference. Never connect 12V or 3S LiPo packs directly to 3V–6V rated BO motors.
+1. **Dedicated Motor Battery:** Always use a 6.0V – 7.4V battery pack (e.g. 4x AA or 2x 18650 Li-ion). Never power DC motors from Arduino 5V.
+2. **Common Ground:** Connect the battery negative (`-`) to Arduino `GND`. Without a common ground, logic signals cannot be recognized.
+3. **Weight Distribution:** Mount your battery pack centrally between the drive wheels so rubber tires maintain firm traction on the floor.
