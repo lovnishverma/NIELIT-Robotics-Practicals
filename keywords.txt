@@ -8,7 +8,10 @@
 
 NIELIT	KEYWORD1
 Robotics	KEYWORD1
-Direction	KEYWORD1
+DifferentialRobot	KEYWORD1
+RobotDirection	KEYWORD1
+AF_DCMotor	KEYWORD1
+AFMotorController	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)

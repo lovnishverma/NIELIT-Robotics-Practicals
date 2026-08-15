@@ -67,7 +67,7 @@ void loop() {
   Serial.println(" cm");
 
   // If path is clear, drive forward
-  if (distance > OBSTACLE_DISTANCE_CM || distance == 0) {
+  if (distance > OBSTACLE_DISTANCE_CM) {
     moveForward(CRUISE_SPEED);
   } else {
     // Obstacle detected within 25 cm!

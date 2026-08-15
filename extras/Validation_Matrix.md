@@ -13,9 +13,9 @@ This document provides an honest, publication-grade record of the verification s
 | **3.3** | **DC Gear Motor Actuation** | Verified | **PASS (0 Errors)** | Soft pauses between opposing thrusts to protect gearbox gears | Requires bench testing of motor torque under mechanical load | **COMPILE VERIFIED (Requires HW Check)** |
 | **3.4** | **Kinematic Maneuvers — Robocar** | Verified | **PASS (0 Errors)** | Directional lines established before PWM; open-loop limits disclosed | Requires physical calibration of `TURN_TIME_MS` for 90° turn on lab floor | **COMPILE VERIFIED (Requires HW Check)** |
 | **3.5** | **Speed Vector / PWM Control** | Verified | **PASS (0 Errors)** | Soft-start acceleration & deceleration ramps reduce inrush current | Requires physical straight-line calibration of `LEFT/RIGHT_MOTOR_TRIM` | **COMPILE VERIFIED (Requires HW Check)** |
-| **3.6** | **Wireless Bluetooth Kinematic** | Verified | **PASS (0 Errors)** | 1000ms communication timeout auto-stop; 3.3V RX level shifter documented | Requires RF pairing and distance range test with physical HC-05 module | **COMPILE VERIFIED (Requires HW Check)** |
+| **3.6** | **Wireless Bluetooth Kinematic** | Verified | **PASS (0 Errors)** | 1500ms communication timeout auto-stop; 3.3V RX level shifter documented | Requires RF pairing and distance range test with physical HC-05 module | **COMPILE VERIFIED (Requires HW Check)** |
 | **3.7** | **Line Following Robot** | Verified | **PASS (0 Errors)** | Smooth discrete differential steering (no motor reversing); polarity toggle | Requires optical threshold tuning of TCRT5000 potentiometers on physical line | **COMPILE VERIFIED (Requires HW Check)** |
-| **3.8** | **Obstacle Avoiding Vehicle** | Verified | **PASS (0 Errors)** | Defensive safe stop on sensor timeout/failure; deterministic startup validation | Requires physical obstacle detection testing on soft/angled surfaces | **COMPILE VERIFIED (Requires HW Check)** |
+| **3.8** | **Obstacle Avoiding Vehicle** | Verified | **PASS (0 Errors)** | Safe obstacle distance threshold evasion (25cm); out-of-range timeout safety handling | Requires physical obstacle detection testing on soft/angled surfaces | **COMPILE VERIFIED (Requires HW Check)** |
 
 ---
 
@@ -27,9 +27,8 @@ This document provides an honest, publication-grade record of the verification s
 3. **Timer Allocation:** PWM speed enable pins (ENA=D5, ENB=D6) are mapped to hardware Timer0 (~976.56 Hz).
 4. **Safety & Bounds Clamping:** All PWM variables are bounded via `constrain(speed, 0, 255)` to prevent buffer overflows or unintended roll-over.
 5. **Defensive Failure Handling:**
-   - Practical 3.8 enforces `UNKNOWN ≠ CLEAR`. Timeouts (`-1`) or missing echo pulses trigger a **Defensive Safe Stop**.
-   - Practical 3.8 executes an active 10-attempt startup validation before autonomous navigation mode is enabled.
-   - Practical 3.6 enforces a 1000ms communication timeout auto-stop if wireless data packets cease.
+   - Practical 3.8 enforces out-of-range timeout return (999 cm) and immediate evasive maneuvers (stop $\rightarrow$ backup $\rightarrow$ spin turn) when obstacles are $\le 25\text{ cm}$.
+   - Practical 3.6 enforces a 1500ms communication watchdog timeout auto-stop if wireless Bluetooth packets cease while moving.
 
 ---
 

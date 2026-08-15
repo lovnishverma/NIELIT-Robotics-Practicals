@@ -1,6 +1,6 @@
 # NIELIT Robotics Practicals Library
 
-**Version:** `1.1.0`  
+**Version:** `1.0.0`  
 **Target Architecture:** `avr` (Arduino UNO R3 / Nano / ATmega328P)  
 **Curriculum Body:** National Institute of Electronics & Information Technology (NIELIT Ropar)  
 **License:** MIT  
@@ -73,7 +73,7 @@ Unlike four-wheel Ackerman steering cars (which steer using a front mechanical r
 ![L293D Motor Driver Shield Wiring](extras/images/l293d_shield_schematic.svg)
 
 * **Left Motor:** Connected to blue screw terminal **M1** (Top-Left)
-* **Right Motor:** Connected to blue screw terminal **M2** (Top-Right)
+* **Right Motor:** Connected to blue screw terminal **M2** (Bottom-Left)
 * **External Battery (6V–7.4V):** Connected to **EXT_PWR (+M and GND)** with the **PWR Jumper ON**
 * **Bluetooth HC-05 (Practical 3.6):**
   * `HC-05 TXD` $\rightarrow$ **Analog Pin A0** (SoftwareSerial RX)

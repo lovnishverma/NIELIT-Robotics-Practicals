@@ -15,7 +15,7 @@
 
 #include <Arduino.h>
 
-#define NIELIT_ROBOTICS_PRACTICALS_VERSION "1.1.0"
+#define NIELIT_ROBOTICS_PRACTICALS_VERSION "1.0.0"
 
 namespace NIELIT {
 namespace Robotics {
