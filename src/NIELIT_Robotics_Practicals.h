@@ -29,13 +29,13 @@ const char* version();
  * Direction states for mobile robot movement.
  */
 enum RobotDirection {
-  STOP,
-  FORWARD,
-  BACKWARD,
-  LEFT,
-  RIGHT,
-  SPIN_LEFT,
-  SPIN_RIGHT
+  DIR_STOP,
+  DIR_FORWARD,
+  DIR_BACKWARD,
+  DIR_LEFT,
+  DIR_RIGHT,
+  DIR_SPIN_LEFT,
+  DIR_SPIN_RIGHT
 };
 
 /**
@@ -168,6 +168,19 @@ public:
   void stop() {
     setLeftMotor(true, 0);
     setRightMotor(true, 0);
+  }
+
+  void move(RobotDirection dir, int speed = 200) {
+    switch (dir) {
+      case DIR_FORWARD:    forward(speed); break;
+      case DIR_BACKWARD:   backward(speed); break;
+      case DIR_LEFT:       turnLeft(speed); break;
+      case DIR_RIGHT:      turnRight(speed); break;
+      case DIR_SPIN_LEFT:  spinLeft(speed); break;
+      case DIR_SPIN_RIGHT: spinRight(speed); break;
+      case DIR_STOP:
+      default:             stop(); break;
+    }
   }
 };
 

@@ -56,9 +56,16 @@ void setup() {
 }
 
 void loop() {
-  // Read incoming Bluetooth command
+  // Read incoming command from Bluetooth module
   if (btSerial.available() > 0) {
     char cmd = btSerial.read();
+    lastCommandTime = millis();
+    processCommand(cmd);
+  }
+
+  // Read incoming command from USB Serial Monitor (bench testing)
+  if (Serial.available() > 0) {
+    char cmd = Serial.read();
     lastCommandTime = millis();
     processCommand(cmd);
   }
