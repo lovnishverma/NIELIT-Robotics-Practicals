@@ -218,4 +218,4 @@ NIELIT-Robotics-Practicals/
 * **Curriculum Design & Technical Authorship:**
   * **Dr. Sarwan Singh** — Joint Director, National Institute of Electronics & Information Technology (NIELIT Ropar)
   * **Lovnish Verma** — Project Engineer, NIELIT Ropar
-* **Organization:** National Institute of Electronics & Information Technology (NIELIT), Ministry of Electronics & Information Technology (MeitY), Government of India.
+* **Organization:** National Institute of Electronics & Information Technology (NIELIT) Ropar, Ministry of Electronics & Information Technology (MeitY), Government of India.
